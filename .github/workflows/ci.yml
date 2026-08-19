@@ -21,7 +21,7 @@ jobs:
       - run: cargo doc --no-deps --all-features
 
   publish:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -33,4 +33,3 @@ jobs:
           toolchain: 1.85.0
       - uses: actions-rust-lang/setup-rust-toolchain@v1
       - run: cargo publish --token "${{ secrets.CRATES_IO_TOKEN }}"
-
