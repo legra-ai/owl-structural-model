@@ -1,0 +1,36 @@
+[package]
+name = "owl-structural-model"
+version = "0.1.0"
+description = "Typed OWL structural values for Rust"
+authors = ["Jacobus Geluk <jacobus.geluk@dataroad.com>"]
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/legra-ai/owl-structural-model"
+documentation = "https://docs.rs/owl-structural-model"
+readme = "README.md"
+keywords = ["owl", "ontology", "rdf", "semantic-web"]
+categories = ["data-structures", "encoding"]
+include = [
+    "Cargo.toml",
+    "README.md",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
+    "src/**/*.rs",
+]
+
+[lib]
+doctest = true
+
+[dependencies]
+iri-rfc3987 = "0.1.4"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[lints.rust]
+missing_docs = "deny"
+
+[lints.clippy]
+all = "deny"
+pedantic = "deny"
+
