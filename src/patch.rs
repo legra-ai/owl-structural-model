@@ -37,11 +37,15 @@ impl OntologyPatch {
 
     /// Return the patch target ontology ID.
     #[must_use]
-    pub fn target(&self) -> &OntologyId { &self.target }
+    pub fn target(&self) -> &OntologyId {
+        &self.target
+    }
 
     /// Return patch operations.
     #[must_use]
-    pub fn operations(&self) -> &[OntologyPatchOperation] { &self.operations }
+    pub fn operations(&self) -> &[OntologyPatchOperation] {
+        &self.operations
+    }
 }
 
 /// One structural ontology patch operation.

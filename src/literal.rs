@@ -29,7 +29,10 @@ impl OwlLiteral {
     /// Create a typed literal.
     #[must_use]
     pub fn typed(lexical: impl Into<String>, datatype: Iri<String>) -> Self {
-        Self::Typed { lexical: lexical.into(), datatype }
+        Self::Typed {
+            lexical: lexical.into(),
+            datatype,
+        }
     }
 
     /// Create a language-tagged literal.
@@ -43,9 +46,13 @@ impl OwlLiteral {
     ) -> Result<Self, StructuralModelError> {
         let language = language.into();
         if language.is_empty() {
-            return Err(StructuralModelError::Empty { kind: KIND_LANGUAGE_TAG });
+            return Err(StructuralModelError::Empty {
+                kind: KIND_LANGUAGE_TAG,
+            });
         }
-        Ok(Self::LanguageTagged { lexical: lexical.into(), language })
+        Ok(Self::LanguageTagged {
+            lexical: lexical.into(),
+            language,
+        })
     }
 }
-

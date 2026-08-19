@@ -18,11 +18,15 @@ pub enum ObjectPropertyExpression {
 impl ObjectPropertyExpression {
     /// Create a named object property expression.
     #[must_use]
-    pub fn named(iri: Iri<String>) -> Self { Self::Named(iri) }
+    pub fn named(iri: Iri<String>) -> Self {
+        Self::Named(iri)
+    }
 
     /// Create an inverse object property expression.
     #[must_use]
-    pub fn inverse_of(property: Self) -> Self { Self::InverseOf(Box::new(property)) }
+    pub fn inverse_of(property: Self) -> Self {
+        Self::InverseOf(Box::new(property))
+    }
 }
 
 /// An OWL class expression.
@@ -59,7 +63,9 @@ pub enum ClassExpression {
 impl ClassExpression {
     /// Create a named class expression.
     #[must_use]
-    pub fn named(iri: Iri<String>) -> Self { Self::Named(iri) }
+    pub fn named(iri: Iri<String>) -> Self {
+        Self::Named(iri)
+    }
 
     /// Create an intersection expression.
     ///
@@ -83,18 +89,26 @@ impl ClassExpression {
 
     /// Create a complement expression.
     #[must_use]
-    pub fn object_complement_of(operand: Self) -> Self { Self::ObjectComplementOf(Box::new(operand)) }
+    pub fn object_complement_of(operand: Self) -> Self {
+        Self::ObjectComplementOf(Box::new(operand))
+    }
 
     /// Create an existential object-property restriction.
     #[must_use]
     pub fn object_some_values_from(property: ObjectPropertyExpression, filler: Self) -> Self {
-        Self::ObjectSomeValuesFrom { property, filler: Box::new(filler) }
+        Self::ObjectSomeValuesFrom {
+            property,
+            filler: Box::new(filler),
+        }
     }
 
     /// Create a universal object-property restriction.
     #[must_use]
     pub fn object_all_values_from(property: ObjectPropertyExpression, filler: Self) -> Self {
-        Self::ObjectAllValuesFrom { property, filler: Box::new(filler) }
+        Self::ObjectAllValuesFrom {
+            property,
+            filler: Box::new(filler),
+        }
     }
 
     fn require_operands(operands: &[Self]) -> Result<(), StructuralModelError> {
@@ -108,4 +122,3 @@ impl ClassExpression {
         Ok(())
     }
 }
-

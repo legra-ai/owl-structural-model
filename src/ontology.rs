@@ -21,18 +21,29 @@ pub type OntologyIdentity = OntologyId;
 impl OntologyId {
     /// Create an anonymous ontology ID.
     #[must_use]
-    pub fn anonymous() -> Self { Self { ontology_iri: None, version_iri: None } }
+    pub fn anonymous() -> Self {
+        Self {
+            ontology_iri: None,
+            version_iri: None,
+        }
+    }
 
     /// Create a named ontology ID.
     #[must_use]
     pub fn named(ontology_iri: Iri<String>) -> Self {
-        Self { ontology_iri: Some(ontology_iri), version_iri: None }
+        Self {
+            ontology_iri: Some(ontology_iri),
+            version_iri: None,
+        }
     }
 
     /// Create a versioned ontology ID.
     #[must_use]
     pub fn versioned(ontology_iri: Iri<String>, version_iri: Iri<String>) -> Self {
-        Self { ontology_iri: Some(ontology_iri), version_iri: Some(version_iri) }
+        Self {
+            ontology_iri: Some(ontology_iri),
+            version_iri: Some(version_iri),
+        }
     }
 
     /// Create an ontology ID from optional identity fields.
@@ -52,20 +63,29 @@ impl OntologyId {
                 message: "version IRI requires ontology IRI",
             });
         }
-        Ok(Self { ontology_iri, version_iri })
+        Ok(Self {
+            ontology_iri,
+            version_iri,
+        })
     }
 
     /// Return the ontology IRI when present.
     #[must_use]
-    pub fn ontology_iri(&self) -> Option<&Iri<String>> { self.ontology_iri.as_ref() }
+    pub fn ontology_iri(&self) -> Option<&Iri<String>> {
+        self.ontology_iri.as_ref()
+    }
 
     /// Return the version IRI when present.
     #[must_use]
-    pub fn version_iri(&self) -> Option<&Iri<String>> { self.version_iri.as_ref() }
+    pub fn version_iri(&self) -> Option<&Iri<String>> {
+        self.version_iri.as_ref()
+    }
 
     /// Return whether this ID has no ontology IRI.
     #[must_use]
-    pub fn is_anonymous(&self) -> bool { self.ontology_iri.is_none() }
+    pub fn is_anonymous(&self) -> bool {
+        self.ontology_iri.is_none()
+    }
 }
 
 impl Display for OntologyId {

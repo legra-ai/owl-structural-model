@@ -16,15 +16,21 @@ pub struct Annotation {
 impl Annotation {
     /// Create an annotation from an annotation property IRI and value.
     #[must_use]
-    pub fn new(property: Iri<String>, value: AnnotationValue) -> Self { Self { property, value } }
+    pub fn new(property: Iri<String>, value: AnnotationValue) -> Self {
+        Self { property, value }
+    }
 
     /// Return the annotation property IRI.
     #[must_use]
-    pub fn property(&self) -> &Iri<String> { &self.property }
+    pub fn property(&self) -> &Iri<String> {
+        &self.property
+    }
 
     /// Return the annotation value.
     #[must_use]
-    pub fn value(&self) -> &AnnotationValue { &self.value }
+    pub fn value(&self) -> &AnnotationValue {
+        &self.value
+    }
 }
 
 /// A value that can appear in an OWL annotation.
@@ -47,7 +53,9 @@ impl AnnotationValue {
     pub fn anonymous_individual(label: impl Into<String>) -> Result<Self, StructuralModelError> {
         let label = label.into();
         if label.is_empty() {
-            return Err(StructuralModelError::Empty { kind: KIND_ANONYMOUS_INDIVIDUAL });
+            return Err(StructuralModelError::Empty {
+                kind: KIND_ANONYMOUS_INDIVIDUAL,
+            });
         }
         Ok(Self::AnonymousIndividual(label))
     }
@@ -72,22 +80,31 @@ pub struct AxiomAnnotations {
 impl AxiomAnnotations {
     /// Create an empty annotation set.
     #[must_use]
-    pub fn empty() -> Self { Self::default() }
+    pub fn empty() -> Self {
+        Self::default()
+    }
 
     /// Create annotations from a bounded axiom-local collection.
     #[must_use]
-    pub fn new(annotations: Vec<Annotation>) -> Self { Self { annotations } }
+    pub fn new(annotations: Vec<Annotation>) -> Self {
+        Self { annotations }
+    }
 
     /// Return the annotations.
     #[must_use]
-    pub fn as_slice(&self) -> &[Annotation] { &self.annotations }
+    pub fn as_slice(&self) -> &[Annotation] {
+        &self.annotations
+    }
 
     /// Return the annotation count.
     #[must_use]
-    pub fn len(&self) -> usize { self.annotations.len() }
+    pub fn len(&self) -> usize {
+        self.annotations.len()
+    }
 
     /// Return whether no annotations are present.
     #[must_use]
-    pub fn is_empty(&self) -> bool { self.annotations.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.annotations.is_empty()
+    }
 }
-

@@ -3,13 +3,8 @@
 use iri_rfc3987::Iri;
 
 use crate::{
-    AnnotationSubject,
-    AnnotationValue,
-    AxiomAnnotations,
-    ClassExpression,
-    Entity,
-    ObjectPropertyExpression,
-    StructuralModelError,
+    AnnotationSubject, AnnotationValue, AxiomAnnotations, ClassExpression, Entity,
+    ObjectPropertyExpression, StructuralModelError,
 };
 
 const KIND_AXIOM_OPERANDS: &str = "axiom operands";
@@ -73,13 +68,20 @@ impl Axiom {
     /// Create a declaration axiom without axiom annotations.
     #[must_use]
     pub fn declaration(entity: Entity) -> Self {
-        Self::Declaration { entity, annotations: AxiomAnnotations::empty() }
+        Self::Declaration {
+            entity,
+            annotations: AxiomAnnotations::empty(),
+        }
     }
 
     /// Create a subclass axiom without axiom annotations.
     #[must_use]
     pub fn sub_class_of(sub_class: ClassExpression, super_class: ClassExpression) -> Self {
-        Self::SubClassOf { sub_class, super_class, annotations: AxiomAnnotations::empty() }
+        Self::SubClassOf {
+            sub_class,
+            super_class,
+            annotations: AxiomAnnotations::empty(),
+        }
     }
 
     /// Create an equivalent-classes axiom without axiom annotations.
@@ -90,7 +92,10 @@ impl Axiom {
     /// class expressions are supplied.
     pub fn equivalent_classes(classes: Vec<ClassExpression>) -> Result<Self, StructuralModelError> {
         Self::require_pair(&classes)?;
-        Ok(Self::EquivalentClasses { classes, annotations: AxiomAnnotations::empty() })
+        Ok(Self::EquivalentClasses {
+            classes,
+            annotations: AxiomAnnotations::empty(),
+        })
     }
 
     /// Create a disjoint-classes axiom without axiom annotations.
@@ -101,7 +106,10 @@ impl Axiom {
     /// class expressions are supplied.
     pub fn disjoint_classes(classes: Vec<ClassExpression>) -> Result<Self, StructuralModelError> {
         Self::require_pair(&classes)?;
-        Ok(Self::DisjointClasses { classes, annotations: AxiomAnnotations::empty() })
+        Ok(Self::DisjointClasses {
+            classes,
+            annotations: AxiomAnnotations::empty(),
+        })
     }
 
     fn require_pair(classes: &[ClassExpression]) -> Result<(), StructuralModelError> {

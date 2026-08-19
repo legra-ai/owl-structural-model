@@ -35,15 +35,21 @@ impl Entity {
 
     /// Create an OWL class entity.
     #[must_use]
-    pub fn class(iri: Iri<String>) -> Self { Self::new(EntityKind::Class, iri) }
+    pub fn class(iri: Iri<String>) -> Self {
+        Self::new(EntityKind::Class, iri)
+    }
 
     /// Create an OWL object property entity.
     #[must_use]
-    pub fn object_property(iri: Iri<String>) -> Self { Self::new(EntityKind::ObjectProperty, iri) }
+    pub fn object_property(iri: Iri<String>) -> Self {
+        Self::new(EntityKind::ObjectProperty, iri)
+    }
 
     /// Create an OWL data property entity.
     #[must_use]
-    pub fn data_property(iri: Iri<String>) -> Self { Self::new(EntityKind::DataProperty, iri) }
+    pub fn data_property(iri: Iri<String>) -> Self {
+        Self::new(EntityKind::DataProperty, iri)
+    }
 
     /// Create an OWL annotation property entity.
     #[must_use]
@@ -59,14 +65,19 @@ impl Entity {
 
     /// Create an OWL datatype entity.
     #[must_use]
-    pub fn datatype(iri: Iri<String>) -> Self { Self::new(EntityKind::Datatype, iri) }
+    pub fn datatype(iri: Iri<String>) -> Self {
+        Self::new(EntityKind::Datatype, iri)
+    }
 
     /// Return the entity kind.
     #[must_use]
-    pub fn kind(&self) -> EntityKind { self.kind }
+    pub fn kind(&self) -> EntityKind {
+        self.kind
+    }
 
     /// Return the entity IRI.
     #[must_use]
-    pub fn iri(&self) -> &Iri<String> { &self.iri }
+    pub fn iri(&self) -> &Iri<String> {
+        &self.iri
+    }
 }
-

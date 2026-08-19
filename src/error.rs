@@ -35,4 +35,3 @@ impl Display for StructuralModelError {
 }
 
 impl std::error::Error for StructuralModelError {}
-

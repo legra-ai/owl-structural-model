@@ -39,7 +39,10 @@ mod tests {
         );
 
         assert!(matches!(axiom, Axiom::SubClassOf { .. }));
-        assert_eq!(Entity::class(iri("https://example.org/Customer")).kind(), EntityKind::Class);
+        assert_eq!(
+            Entity::class(iri("https://example.org/Customer")).kind(),
+            EntityKind::Class
+        );
     }
 
     #[test]
