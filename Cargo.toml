@@ -1,6 +1,6 @@
 [package]
 name = "owl-structural-model"
-version = "0.1.0"
+version = "0.1.1"
 description = "Typed OWL structural values for Rust"
 authors = ["Jacobus Geluk <jacobus.geluk@dataroad.com>"]
 edition = "2024"
@@ -23,7 +23,7 @@ include = [
 doctest = true
 
 [dependencies]
-iri-rfc3987 = "0.1.4"
+iri-rfc3987 = "=0.1.4"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
@@ -33,4 +33,3 @@ missing_docs = "deny"
 [lints.clippy]
 all = "deny"
 pedantic = "deny"
-
