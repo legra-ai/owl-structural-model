@@ -1,10 +1,10 @@
 [package]
 name = "owl-structural-model"
-version = "0.1.1"
+version = "0.1.2"
 description = "Typed OWL structural values for Rust"
 authors = ["Jacobus Geluk <jacobus.geluk@dataroad.com>"]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/legra-ai/owl-structural-model"
 documentation = "https://docs.rs/owl-structural-model"
@@ -23,7 +23,7 @@ include = [
 doctest = true
 
 [dependencies]
-iri-rfc3987 = "=0.1.4"
+iri-rfc3987 = "=0.1.6"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
