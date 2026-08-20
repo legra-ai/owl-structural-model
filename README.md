@@ -75,6 +75,19 @@ patches. It does not promise that an entire ontology fits in memory. A parser
 or application handling an unbounded source should stream axioms and apply
 its own explicit limits or persistence strategy.
 
+## Related crates
+
+- [`iri-rfc3987`](https://crates.io/crates/iri-rfc3987) — typed IRI parsing,
+  validation, and resolution.
+- [`iri-namespace`](https://crates.io/crates/iri-namespace) — validated RDF
+  namespaces, prefixes, and CURIEs.
+- [`rdf-winnow`](https://crates.io/crates/rdf-winnow) — reusable RDF lexical
+  parsers built on `winnow`.
+- [`shacl-structural-model`](https://crates.io/crates/shacl-structural-model)
+  — typed structural values for SHACL shapes.
+- [`sparql-results`](https://crates.io/crates/sparql-results) — async streaming
+  SPARQL Results XML and JSON serialization.
+
 ## License
 
 Licensed under either of:
