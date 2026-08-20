@@ -5,13 +5,24 @@
 [![CI](https://github.com/legra-ai/owl-structural-model/actions/workflows/ci.yml/badge.svg)](https://github.com/legra-ai/owl-structural-model/actions/workflows/ci.yml)
 [![License](https://img.shields.io/crates/l/owl-structural-model.svg)](https://github.com/legra-ai/owl-structural-model#license)
 
-Typed OWL structural values for Rust.
+Typed OWL 2 structural values for Rust.
 
 `owl-structural-model` is a small, dependency-light model for representing
-OWL entities, class expressions, literals, annotations, axioms, ontology
-identity, and structural patches. It is intended for parsers, editors,
-validators, serializers, and storage adapters that need typed OWL values
-without taking a dependency on an RDF store or a reasoner.
+the structural values of OWL 2: entities, class expressions, literals,
+annotations, axioms, ontology identity, and structural patches. It is intended
+for parsers, editors, validators, serializers, and storage adapters that need
+typed OWL values without taking a dependency on an RDF store or a reasoner.
+
+The target standard is OWL 2, the current version of the W3C Web Ontology
+Language. This crate models a deliberately small, currently supported subset
+of the OWL 2 structural specification; it is not an OWL 2 parser, reasoner, or
+full conformance implementation, and it does not model the older OWL 1 API.
+
+## W3C specifications
+
+- [OWL 2 Web Ontology Language Document Overview](https://www.w3.org/TR/owl-overview/)
+- [OWL 2 Structural Specification and Functional-Style Syntax](https://www.w3.org/TR/owl2-syntax/)
+- [OWL 2 Mapping to RDF Graphs](https://www.w3.org/TR/owl2-mapping-to-rdf/)
 
 ## What it provides
 
@@ -72,4 +83,3 @@ Licensed under either of:
 - MIT License
 
 at your option.
-

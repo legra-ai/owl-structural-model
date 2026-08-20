@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![forbid(unsafe_code)]
 
-//! Typed OWL structural values without an RDF-store dependency.
+//! Typed OWL 2 structural values without an RDF-store dependency.
 
 mod annotation;
 mod axiom;
