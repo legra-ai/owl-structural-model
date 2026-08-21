@@ -6,3 +6,10 @@ refactor = { changelog_title = "Refactoring" }
 test = { changelog_title = "Testing" }
 chore = { changelog_title = "Maintenance" }
 
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+repository = "owl-structural-model"
+owner = "legra-ai"
+authors = [{ username = "jgeluk", signature = "Jacobus Geluk" }]
