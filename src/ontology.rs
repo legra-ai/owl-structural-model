@@ -10,6 +10,7 @@ const KIND_ONTOLOGY_ID: &str = "ontology ID";
 
 /// OWL ontology identity: optional ontology IRI plus optional version IRI.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(try_from = "OntologyIdInput")]
 pub struct OntologyId {
     ontology_iri: Option<Iri<String>>,
     version_iri: Option<Iri<String>>,
@@ -96,5 +97,20 @@ impl Display for OntologyId {
             (None, None) => formatter.write_str("anonymous ontology"),
             (None, Some(_)) => formatter.write_str("invalid version-only ontology ID"),
         }
+    }
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename = "OntologyId")]
+struct OntologyIdInput {
+    ontology_iri: Option<Iri<String>>,
+    version_iri: Option<Iri<String>>,
+}
+
+impl TryFrom<OntologyIdInput> for OntologyId {
+    type Error = StructuralModelError;
+
+    fn try_from(input: OntologyIdInput) -> Result<Self, Self::Error> {
+        Self::try_new(input.ontology_iri, input.version_iri)
     }
 }

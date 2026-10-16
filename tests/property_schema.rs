@@ -1,5 +1,7 @@
 //! Property schema and keys retain OWL structural distinctions.
 
+mod support;
+
 use iri_rfc3987::Iri;
 use owl_structural_model::{
     Annotation, AnnotationValue, Axiom, AxiomAnnotations, ClassExpression, DataRange,
@@ -171,6 +173,5 @@ fn assert_annotated_round_trip(axiom: Axiom) {
     )]);
     let annotated = axiom.with_annotations(annotations.clone());
     assert_eq!(annotated.annotations(), &annotations);
-    let encoded = serde_json::to_string(&annotated).unwrap();
-    assert_eq!(serde_json::from_str::<Axiom>(&encoded).unwrap(), annotated);
+    support::assert_round_trip(&annotated);
 }

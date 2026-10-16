@@ -91,6 +91,24 @@ equivalent classes require at least two operands and language-tagged literals
 require a non-empty language tag. Errors are returned as the typed
 `StructuralModelError` enum.
 
+## Serialization
+
+All semantic types implement Serde serialization and deserialization directly,
+without a JSON-specific representation. The integration suites exercise JSON
+and Postcard, including every supported axiom and expression variant, ontology
+identities, annotations and all patch operations. Nested literals retain their
+exact lexical form and language metadata.
+
+Deserialization enforces the same local checks as constructors: operand counts,
+non-empty language tags and anonymous annotation labels, valid ontology identity
+combinations, and non-empty patches. This is structural validation, not full
+language-tag, datatype-value or OWL-profile validation. Public enum variants can
+still be assembled directly; callers should use checked constructors.
+
+Serde encodings do not implement RDF concrete syntaxes or OWL Functional-Style
+Syntax, and do not define canonical identity bytes or a stable storage protocol.
+Postcard is a test dependency, not a runtime encoding requirement.
+
 ## Scope and memory
 
 The crate models individual structural values and explicit, caller-owned

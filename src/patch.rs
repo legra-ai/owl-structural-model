@@ -8,6 +8,7 @@ const KIND_ONTOLOGY_PATCH: &str = "ontology patch";
 
 /// A non-empty collection of structural changes for one ontology identity.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(try_from = "OntologyPatchInput")]
 pub struct OntologyPatch {
     target: OntologyId,
     // bounded: one submitted patch/change request, never a workspace stream.
@@ -81,4 +82,20 @@ pub enum OntologyPatchOperation {
         /// Structural axiom.
         axiom: Axiom,
     },
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename = "OntologyPatch")]
+struct OntologyPatchInput {
+    target: OntologyId,
+    // bounded: operations of one submitted structural patch.
+    operations: Vec<OntologyPatchOperation>,
+}
+
+impl TryFrom<OntologyPatchInput> for OntologyPatch {
+    type Error = StructuralModelError;
+
+    fn try_from(input: OntologyPatchInput) -> Result<Self, Self::Error> {
+        Self::try_new(input.target, input.operations)
+    }
 }

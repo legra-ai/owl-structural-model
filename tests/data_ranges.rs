@@ -1,5 +1,7 @@
 //! OWL 2 data ranges retain structure without evaluating datatype values.
 
+mod support;
+
 use iri_rfc3987::Iri;
 use owl_structural_model::{DataRange, FacetRestriction, OwlLiteral};
 
@@ -39,8 +41,7 @@ fn every_data_range_form_round_trips_with_exact_literals() {
         restricted,
     ];
     for range in forms {
-        let encoded = serde_json::to_string(&range).unwrap();
-        assert_eq!(serde_json::from_str::<DataRange>(&encoded).unwrap(), range);
+        support::assert_round_trip(&range);
     }
     assert_ne!(
         five,

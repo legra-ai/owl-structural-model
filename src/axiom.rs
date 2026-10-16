@@ -31,6 +31,7 @@ pub enum Axiom {
     /// An equivalent-classes axiom.
     EquivalentClasses {
         /// Equivalent class expressions.
+        #[serde(deserialize_with = "Axiom::deserialize_classes")]
         classes: Vec<ClassExpression>,
         /// Axiom annotations.
         annotations: AxiomAnnotations,
@@ -38,6 +39,7 @@ pub enum Axiom {
     /// A disjoint-classes axiom.
     DisjointClasses {
         /// Disjoint class expressions.
+        #[serde(deserialize_with = "Axiom::deserialize_classes")]
         classes: Vec<ClassExpression>,
         /// Axiom annotations.
         annotations: AxiomAnnotations,
@@ -285,5 +287,13 @@ impl Axiom {
             });
         }
         Ok(())
+    }
+    fn deserialize_classes<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Vec<ClassExpression>, D::Error> {
+        // bounded: class expressions of one submitted structural axiom.
+        let classes = <Vec<ClassExpression> as serde::Deserialize>::deserialize(deserializer)?;
+        Self::require_pair(&classes).map_err(serde::de::Error::custom)?;
+        Ok(classes)
     }
 }
