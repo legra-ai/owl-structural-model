@@ -33,12 +33,26 @@ The crate keeps the structural layer explicit:
   expressions.
 - `OwlLiteral`, `Annotation`, and `AxiomAnnotations` preserve typed values.
 - `Axiom` represents the currently supported structural axiom forms.
+- Property axioms include all seven object-property characteristics, functional
+  data properties, and object subproperty inclusions with either a single
+  property expression or an ordered `ObjectPropertyChain`. Chains preserve
+  repeated members and require at least two members, including on deserialization.
 - `OntologyId` represents anonymous, named, and versioned ontology identity.
 - `OntologyPatch` represents a non-empty set of changes to one ontology.
 
 It does not parse files, perform I/O, access a graph store, run a reasoner,
 or choose an application-specific profile. A caller can stream a document as
 individual axioms and retain only the bounded structural values it needs.
+
+The structural layer is shared vocabulary for editors and reasoner adapters.
+Its constructors enforce local shape invariants; ontology-wide OWL 2 DL
+restrictions, profile membership, RDF mapping, and RDF closure execution are
+separate responsibilities. An RDF reasoner need not convert every input triple
+to a structural axiom before applying OWL-RL/RDF rules.
+
+Property chains follow [OWL 2 object subproperty axioms](https://www.w3.org/TR/owl2-syntax/#Object_Subproperties).
+All axioms expose `annotations()` and `with_annotations()` to inspect or replace
+axiom annotations without changing the structural operands.
 
 ## Example
 

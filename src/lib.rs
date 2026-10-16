@@ -11,6 +11,8 @@ mod error;
 mod literal;
 mod ontology;
 mod patch;
+mod property_axiom;
+mod property_chain;
 
 pub use annotation::{Annotation, AnnotationSubject, AnnotationValue, AxiomAnnotations};
 pub use axiom::Axiom;
@@ -20,6 +22,7 @@ pub use error::StructuralModelError;
 pub use literal::OwlLiteral;
 pub use ontology::{OntologyId, OntologyIdentity};
 pub use patch::{OntologyPatch, OntologyPatchOperation};
+pub use property_chain::{ObjectPropertyChain, SubObjectPropertyExpression};
 
 #[cfg(test)]
 mod tests {

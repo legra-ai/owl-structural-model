@@ -4,7 +4,7 @@ use iri_rfc3987::Iri;
 
 use crate::{
     AnnotationSubject, AnnotationValue, AxiomAnnotations, ClassExpression, Entity,
-    ObjectPropertyExpression, StructuralModelError,
+    ObjectPropertyExpression, StructuralModelError, SubObjectPropertyExpression,
 };
 
 const KIND_AXIOM_OPERANDS: &str = "axiom operands";
@@ -48,6 +48,71 @@ pub enum Axiom {
         property: ObjectPropertyExpression,
         /// Domain class expression.
         domain: ClassExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Object subproperty inclusion, including ordered property-chain inclusion.
+    SubObjectPropertyOf {
+        /// A single property expression or an ordered chain.
+        sub_property: SubObjectPropertyExpression,
+        /// The superproperty expression.
+        super_property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is functional.
+    FunctionalObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is inverse-functional.
+    InverseFunctionalObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is reflexive.
+    ReflexiveObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is irreflexive.
+    IrreflexiveObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is symmetric.
+    SymmetricObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is asymmetric.
+    AsymmetricObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property expression is transitive.
+    TransitiveObjectProperty {
+        /// The characterized object property expression.
+        property: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// A data property has at most one distinct data value per individual.
+    FunctionalDataProperty {
+        /// The named data property.
+        property: Iri<String>,
         /// Axiom annotations.
         annotations: AxiomAnnotations,
     },
