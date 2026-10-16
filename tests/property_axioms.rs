@@ -69,7 +69,8 @@ fn property_chain_preserves_order_repetitions_and_inverses() {
     let members = vec![parent.clone(), inverse, parent.clone()];
     let chain = ObjectPropertyChain::try_new(members.clone()).unwrap();
     assert_eq!(chain.as_slice(), members);
-    let reversed = ObjectPropertyChain::try_new(vec![members[1].clone(), parent]).unwrap();
+    let reversed =
+        ObjectPropertyChain::try_new(vec![members[1].clone(), parent.clone(), parent]).unwrap();
     assert_ne!(chain, reversed);
     let axiom = Axiom::sub_object_property_of(
         SubObjectPropertyExpression::Chain(chain),
@@ -88,11 +89,13 @@ fn short_chains_are_rejected_at_construction_and_deserialization() {
             Err(StructuralModelError::InvalidFormat { .. })
         ));
         let encoded = serde_json::to_string(&members).unwrap();
-        assert!(serde_json::from_str::<ObjectPropertyChain>(&encoded).is_err());
+        let error = serde_json::from_str::<ObjectPropertyChain>(&encoded).unwrap_err();
+        assert!(error.to_string().contains("requires at least two"));
         let encoded_axiom = format!(
             r#"{{"SubObjectPropertyOf":{{"sub_property":{{"Chain":{encoded}}},"super_property":{{"Named":"urn:relative"}},"annotations":{{"annotations":[]}}}}}}"#,
         );
-        assert!(serde_json::from_str::<Axiom>(&encoded_axiom).is_err());
+        let error = serde_json::from_str::<Axiom>(&encoded_axiom).unwrap_err();
+        assert!(error.to_string().contains("requires at least two"));
     }
 }
 
