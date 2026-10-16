@@ -1,5 +1,4 @@
 /target/
-Cargo.lock
 CHANGELOG.md
 *.orig
 .cargo_vcs_info.json
