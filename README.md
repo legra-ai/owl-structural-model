@@ -40,6 +40,12 @@ The crate keeps the structural layer explicit:
   data properties, and object subproperty inclusions with either a single
   property expression or an ordered `ObjectPropertyChain`. Chains preserve
   repeated members and require at least two members, including on deserialization.
+- Object and data property axioms include equivalence, disjointness, domains,
+  ranges, and subproperty inclusions; object properties also support inverse
+  relationships. Datatype definitions retain their structural `DataRange`.
+- `KeyProperties` keeps object and data key properties separate and rejects a
+  key with neither, including during deserialization. `Axiom::has_key` associates
+  those properties with a class expression; it does not execute key reasoning.
 - `OntologyId` represents anonymous, named, and versioned ontology identity.
 - `OntologyPatch` represents a non-empty set of changes to one ontology.
 

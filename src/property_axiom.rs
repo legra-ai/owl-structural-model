@@ -108,6 +108,17 @@ impl Axiom {
             | Self::SymmetricObjectProperty { annotations, .. }
             | Self::AsymmetricObjectProperty { annotations, .. }
             | Self::TransitiveObjectProperty { annotations, .. }
+            | Self::EquivalentObjectProperties { annotations, .. }
+            | Self::DisjointObjectProperties { annotations, .. }
+            | Self::InverseObjectProperties { annotations, .. }
+            | Self::ObjectPropertyRange { annotations, .. }
+            | Self::SubDataPropertyOf { annotations, .. }
+            | Self::EquivalentDataProperties { annotations, .. }
+            | Self::DisjointDataProperties { annotations, .. }
+            | Self::DataPropertyDomain { annotations, .. }
+            | Self::DataPropertyRange { annotations, .. }
+            | Self::DatatypeDefinition { annotations, .. }
+            | Self::HasKey { annotations, .. }
             | Self::FunctionalDataProperty { annotations, .. } => annotations,
         }
     }
@@ -130,6 +141,17 @@ impl Axiom {
             | Self::SymmetricObjectProperty { annotations, .. }
             | Self::AsymmetricObjectProperty { annotations, .. }
             | Self::TransitiveObjectProperty { annotations, .. }
+            | Self::EquivalentObjectProperties { annotations, .. }
+            | Self::DisjointObjectProperties { annotations, .. }
+            | Self::InverseObjectProperties { annotations, .. }
+            | Self::ObjectPropertyRange { annotations, .. }
+            | Self::SubDataPropertyOf { annotations, .. }
+            | Self::EquivalentDataProperties { annotations, .. }
+            | Self::DisjointDataProperties { annotations, .. }
+            | Self::DataPropertyDomain { annotations, .. }
+            | Self::DataPropertyRange { annotations, .. }
+            | Self::DatatypeDefinition { annotations, .. }
+            | Self::HasKey { annotations, .. }
             | Self::FunctionalDataProperty { annotations, .. } => *annotations = new_annotations,
         }
         self

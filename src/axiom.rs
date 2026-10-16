@@ -3,8 +3,8 @@
 use iri_rfc3987::Iri;
 
 use crate::{
-    AnnotationSubject, AnnotationValue, AxiomAnnotations, ClassExpression, Entity,
-    ObjectPropertyExpression, StructuralModelError, SubObjectPropertyExpression,
+    AnnotationSubject, AnnotationValue, AxiomAnnotations, ClassExpression, DataRange, Entity,
+    KeyProperties, ObjectPropertyExpression, StructuralModelError, SubObjectPropertyExpression,
 };
 
 const KIND_AXIOM_OPERANDS: &str = "axiom operands";
@@ -113,6 +113,105 @@ pub enum Axiom {
     FunctionalDataProperty {
         /// The named data property.
         property: Iri<String>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Equivalent object property expressions.
+    EquivalentObjectProperties {
+        /// Equivalent object property expressions.
+        // bounded: operands of one caller-owned structural property axiom.
+        #[serde(deserialize_with = "Axiom::deserialize_property_pair")]
+        properties: Vec<ObjectPropertyExpression>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Pairwise disjoint object property expressions.
+    DisjointObjectProperties {
+        /// Pairwise disjoint object property expressions.
+        // bounded: operands of one caller-owned structural property axiom.
+        #[serde(deserialize_with = "Axiom::deserialize_property_pair")]
+        properties: Vec<ObjectPropertyExpression>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Two inverse object property expressions.
+    InverseObjectProperties {
+        /// First object property expression.
+        first: ObjectPropertyExpression,
+        /// Its inverse object property expression.
+        second: ObjectPropertyExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object property range.
+    ObjectPropertyRange {
+        /// The restricted object property expression.
+        property: ObjectPropertyExpression,
+        /// The range class expression.
+        range: ClassExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// A data subproperty inclusion.
+    SubDataPropertyOf {
+        /// The named subproperty.
+        sub_property: Iri<String>,
+        /// The named superproperty.
+        super_property: Iri<String>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Equivalent data properties.
+    EquivalentDataProperties {
+        /// Equivalent named data properties.
+        // bounded: operands of one caller-owned structural property axiom.
+        #[serde(deserialize_with = "Axiom::deserialize_property_pair")]
+        properties: Vec<Iri<String>>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// Pairwise disjoint data properties.
+    DisjointDataProperties {
+        /// Pairwise disjoint named data properties.
+        // bounded: operands of one caller-owned structural property axiom.
+        #[serde(deserialize_with = "Axiom::deserialize_property_pair")]
+        properties: Vec<Iri<String>>,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// A data property domain.
+    DataPropertyDomain {
+        /// The named data property.
+        property: Iri<String>,
+        /// The domain class expression.
+        domain: ClassExpression,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// A data property range.
+    DataPropertyRange {
+        /// The named data property.
+        property: Iri<String>,
+        /// The structural data range.
+        range: DataRange,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// A datatype definition.
+    DatatypeDefinition {
+        /// The defined datatype.
+        datatype: Iri<String>,
+        /// The defining data range.
+        range: DataRange,
+        /// Axiom annotations.
+        annotations: AxiomAnnotations,
+    },
+    /// An object/data property key for instances of a class expression.
+    HasKey {
+        /// The class expression identified by the key.
+        class: ClassExpression,
+        /// At least one object or data key property.
+        properties: KeyProperties,
         /// Axiom annotations.
         annotations: AxiomAnnotations,
     },
