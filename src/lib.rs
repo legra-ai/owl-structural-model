@@ -6,6 +6,7 @@
 mod annotation;
 mod axiom;
 mod class_expression;
+mod data_range;
 mod entity;
 mod error;
 mod literal;
@@ -17,6 +18,7 @@ mod property_chain;
 pub use annotation::{Annotation, AnnotationSubject, AnnotationValue, AxiomAnnotations};
 pub use axiom::Axiom;
 pub use class_expression::{ClassExpression, ObjectPropertyExpression};
+pub use data_range::{DataRange, FacetRestriction};
 pub use entity::{Entity, EntityKind};
 pub use error::StructuralModelError;
 pub use literal::OwlLiteral;

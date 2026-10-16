@@ -32,6 +32,9 @@ The crate keeps the structural layer explicit:
 - `ClassExpression` and `ObjectPropertyExpression` represent nested OWL
   expressions.
 - `OwlLiteral`, `Annotation`, and `AxiomAnnotations` preserve typed values.
+- `DataRange` represents named datatypes, intersections, unions, complements,
+  literal enumerations and facet restrictions. Constructors and deserialization
+  check structural arity; datatype value evaluation stays outside the model.
 - `Axiom` represents the currently supported structural axiom forms.
 - Property axioms include all seven object-property characteristics, functional
   data properties, and object subproperty inclusions with either a single
