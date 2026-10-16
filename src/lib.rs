@@ -6,20 +6,28 @@
 mod annotation;
 mod axiom;
 mod class_expression;
+mod data_range;
 mod entity;
 mod error;
+mod key;
 mod literal;
 mod ontology;
 mod patch;
+mod property_axiom;
+mod property_chain;
+mod property_schema;
 
 pub use annotation::{Annotation, AnnotationSubject, AnnotationValue, AxiomAnnotations};
 pub use axiom::Axiom;
 pub use class_expression::{ClassExpression, ObjectPropertyExpression};
+pub use data_range::{DataRange, FacetRestriction};
 pub use entity::{Entity, EntityKind};
 pub use error::StructuralModelError;
+pub use key::KeyProperties;
 pub use literal::OwlLiteral;
 pub use ontology::{OntologyId, OntologyIdentity};
 pub use patch::{OntologyPatch, OntologyPatchOperation};
+pub use property_chain::{ObjectPropertyChain, SubObjectPropertyExpression};
 
 #[cfg(test)]
 mod tests {

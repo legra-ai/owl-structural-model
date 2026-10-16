@@ -32,13 +32,36 @@ The crate keeps the structural layer explicit:
 - `ClassExpression` and `ObjectPropertyExpression` represent nested OWL
   expressions.
 - `OwlLiteral`, `Annotation`, and `AxiomAnnotations` preserve typed values.
+- `DataRange` represents named datatypes, intersections, unions, complements,
+  literal enumerations and facet restrictions. Constructors and deserialization
+  check structural arity; datatype value evaluation stays outside the model.
 - `Axiom` represents the currently supported structural axiom forms.
+- Property axioms include all seven object-property characteristics, functional
+  data properties, and object subproperty inclusions with either a single
+  property expression or an ordered `ObjectPropertyChain`. Chains preserve
+  repeated members and require at least two members, including on deserialization.
+- Object and data property axioms include equivalence, disjointness, domains,
+  ranges, and subproperty inclusions; object properties also support inverse
+  relationships. Datatype definitions retain their structural `DataRange`.
+- `KeyProperties` keeps object and data key properties separate and rejects a
+  key with neither, including during deserialization. `Axiom::has_key` associates
+  those properties with a class expression; it does not execute key reasoning.
 - `OntologyId` represents anonymous, named, and versioned ontology identity.
 - `OntologyPatch` represents a non-empty set of changes to one ontology.
 
 It does not parse files, perform I/O, access a graph store, run a reasoner,
 or choose an application-specific profile. A caller can stream a document as
 individual axioms and retain only the bounded structural values it needs.
+
+The structural layer is shared vocabulary for editors and reasoner adapters.
+Its constructors enforce local shape invariants; ontology-wide OWL 2 DL
+restrictions, profile membership, RDF mapping, and RDF closure execution are
+separate responsibilities. An RDF reasoner need not convert every input triple
+to a structural axiom before applying OWL-RL/RDF rules.
+
+Property chains follow [OWL 2 object subproperty axioms](https://www.w3.org/TR/owl2-syntax/#Object_Subproperties).
+All axioms expose `annotations()` and `with_annotations()` to inspect or replace
+axiom annotations without changing the structural operands.
 
 ## Example
 
