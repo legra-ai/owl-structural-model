@@ -39,9 +39,11 @@ pub enum ClassExpression {
     /// `owl:Nothing`.
     Nothing,
     /// An intersection of class expressions.
-    ObjectIntersectionOf(Vec<Self>),
+    ObjectIntersectionOf(
+        #[serde(deserialize_with = "ClassExpression::deserialize_operands")] Vec<Self>,
+    ),
     /// A union of class expressions.
-    ObjectUnionOf(Vec<Self>),
+    ObjectUnionOf(#[serde(deserialize_with = "ClassExpression::deserialize_operands")] Vec<Self>),
     /// A complement of a class expression.
     ObjectComplementOf(Box<Self>),
     /// An existential object-property restriction.
@@ -120,5 +122,13 @@ impl ClassExpression {
             });
         }
         Ok(())
+    }
+    fn deserialize_operands<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Vec<Self>, D::Error> {
+        // bounded: operands of one submitted class expression.
+        let operands = <Vec<Self> as serde::Deserialize>::deserialize(deserializer)?;
+        Self::require_operands(&operands).map_err(serde::de::Error::custom)?;
+        Ok(operands)
     }
 }

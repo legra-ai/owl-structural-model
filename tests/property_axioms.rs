@@ -1,5 +1,7 @@
 //! Structural property axioms shared by editors and reasoner adapters.
 
+mod support;
+
 use iri_rfc3987::Iri;
 use owl_structural_model::{
     Annotation, AnnotationValue, Axiom, AxiomAnnotations, ObjectPropertyChain,
@@ -45,8 +47,7 @@ fn property_characteristics_keep_distinct_axiom_kinds_and_annotations() {
             | (6, Axiom::TransitiveObjectProperty { property, .. }) => assert_eq!(property, &p),
             _ => panic!("characteristic constructor changed the axiom kind"),
         }
-        let encoded = serde_json::to_string(&annotated).unwrap();
-        assert_eq!(serde_json::from_str::<Axiom>(&encoded).unwrap(), annotated);
+        support::assert_round_trip(&annotated);
     }
 }
 
@@ -57,8 +58,7 @@ fn functional_data_property_uses_a_data_property_iri() {
         matches!(axiom, Axiom::FunctionalDataProperty { ref property, .. }
         if property == &iri("urn:age"))
     );
-    let encoded = serde_json::to_string(&axiom).unwrap();
-    assert_eq!(serde_json::from_str::<Axiom>(&encoded).unwrap(), axiom);
+    support::assert_round_trip(&axiom);
 }
 
 #[test]
@@ -76,8 +76,7 @@ fn property_chain_preserves_order_repetitions_and_inverses() {
         SubObjectPropertyExpression::Chain(chain),
         property("urn:relative"),
     );
-    let encoded = serde_json::to_string(&axiom).unwrap();
-    assert_eq!(serde_json::from_str::<Axiom>(&encoded).unwrap(), axiom);
+    support::assert_round_trip(&axiom);
 }
 
 #[test]

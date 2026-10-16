@@ -21,6 +21,7 @@ pub enum OwlLiteral {
         /// Literal lexical form.
         lexical: String,
         /// BCP-47 language tag.
+        #[serde(deserialize_with = "OwlLiteral::deserialize_language")]
         language: String,
     },
 }
@@ -45,14 +46,26 @@ impl OwlLiteral {
         language: impl Into<String>,
     ) -> Result<Self, StructuralModelError> {
         let language = language.into();
+        Self::require_language(&language)?;
+        Ok(Self::LanguageTagged {
+            lexical: lexical.into(),
+            language,
+        })
+    }
+    fn require_language(language: &str) -> Result<(), StructuralModelError> {
         if language.is_empty() {
             return Err(StructuralModelError::Empty {
                 kind: KIND_LANGUAGE_TAG,
             });
         }
-        Ok(Self::LanguageTagged {
-            lexical: lexical.into(),
-            language,
-        })
+        Ok(())
+    }
+
+    fn deserialize_language<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<String, D::Error> {
+        let language = <String as serde::Deserialize>::deserialize(deserializer)?;
+        Self::require_language(&language).map_err(serde::de::Error::custom)?;
+        Ok(language)
     }
 }

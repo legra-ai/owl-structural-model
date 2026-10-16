@@ -39,7 +39,7 @@ pub enum AnnotationValue {
     /// An IRI-valued annotation.
     Iri(Iri<String>),
     /// An anonymous-individual-valued annotation.
-    AnonymousIndividual(String),
+    AnonymousIndividual(#[serde(deserialize_with = "AnnotationValue::deserialize_label")] String),
     /// A literal-valued annotation.
     Literal(OwlLiteral),
 }
@@ -52,12 +52,25 @@ impl AnnotationValue {
     /// Returns [`StructuralModelError::Empty`] when the label is empty.
     pub fn anonymous_individual(label: impl Into<String>) -> Result<Self, StructuralModelError> {
         let label = label.into();
+        Self::require_label(&label)?;
+        Ok(Self::AnonymousIndividual(label))
+    }
+
+    fn require_label(label: &str) -> Result<(), StructuralModelError> {
         if label.is_empty() {
             return Err(StructuralModelError::Empty {
                 kind: KIND_ANONYMOUS_INDIVIDUAL,
             });
         }
-        Ok(Self::AnonymousIndividual(label))
+        Ok(())
+    }
+
+    fn deserialize_label<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<String, D::Error> {
+        let label = <String as serde::Deserialize>::deserialize(deserializer)?;
+        Self::require_label(&label).map_err(serde::de::Error::custom)?;
+        Ok(label)
     }
 }
 
@@ -67,7 +80,7 @@ pub enum AnnotationSubject {
     /// An IRI subject.
     Iri(Iri<String>),
     /// An anonymous individual subject.
-    AnonymousIndividual(String),
+    AnonymousIndividual(#[serde(deserialize_with = "AnnotationValue::deserialize_label")] String),
 }
 
 /// Axiom annotations attached to one structural axiom.
