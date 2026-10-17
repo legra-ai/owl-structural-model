@@ -8,6 +8,7 @@ use owl_structural_model::{
     Annotation, AnnotationSubject, AnnotationValue, Axiom, AxiomAnnotations, FacetRestriction,
     OntologyId, OntologyPatch, OntologyPatchOperation, OwlLiteral,
 };
+use owl_structural_model::{ClassExpression, Individual};
 use rdf_structural_model::{BaseDirection, BlankNodeId, LanguageTag, Literal, LiteralMetadata};
 use serde::{Deserialize, Serialize};
 
@@ -204,4 +205,87 @@ fn constructors_do_not_require_payload_traits() {
     assert!(AxiomAnnotations::<LiteralHandle, AnonymousHandle>::default().is_empty());
     // The public alias is the shared type itself, without a conversion layer.
     let _: OwlLiteral = Literal::string("shared value");
+}
+
+#[test]
+fn custom_payloads_and_individuals_propagate_through_class_expressions() {
+    let literal = ExternalLiteral::Lexical(Literal::string("custom literal"));
+    let class = ClassExpression::object_intersection_of(vec![
+        ClassExpression::data_has_value(iri("urn:p"), literal.clone()),
+        ClassExpression::object_has_value(
+            owl_structural_model::ObjectPropertyExpression::named(iri("urn:q")),
+            Individual::anonymous(InternedAnonymous {
+                scope: 11,
+                local: 42,
+            }),
+        ),
+        ClassExpression::object_one_of(vec![Individual::anonymous(InternedAnonymous {
+            scope: 12,
+            local: 42,
+        })])
+        .unwrap(),
+        ClassExpression::data_some_values_from(
+            vec![iri("urn:r")],
+            DataRange::data_one_of(vec![literal]).unwrap(),
+        )
+        .unwrap(),
+    ])
+    .unwrap();
+    let patch = OntologyPatch::try_new(
+        OntologyId::anonymous(),
+        vec![OntologyPatchOperation::AddAxiom {
+            axiom: Axiom::class_assertion(
+                class,
+                Individual::anonymous(InternedAnonymous {
+                    scope: 13,
+                    local: 42,
+                }),
+            ),
+        }],
+    )
+    .unwrap();
+    support::assert_round_trip(&patch);
+}
+
+#[test]
+fn class_assertions_borrow_nested_literal_and_anonymous_payloads() {
+    let patch: OntologyPatch = OntologyPatch::try_new(
+        OntologyId::anonymous(),
+        vec![OntologyPatchOperation::AddAxiom {
+            axiom: Axiom::class_assertion(
+                ClassExpression::data_has_value(
+                    iri("urn:p"),
+                    Literal::string("borrow class payload"),
+                ),
+                Individual::anonymous(blank("urn:scope")),
+            ),
+        }],
+    )
+    .unwrap();
+    let bytes = postcard::to_allocvec(&patch).unwrap();
+    let borrowed: OntologyPatch<Literal<&str>, BlankNodeId<&str>> =
+        postcard::from_bytes(&bytes).unwrap();
+    let OntologyPatchOperation::AddAxiom {
+        axiom: Axiom::ClassAssertion {
+            class, individual, ..
+        },
+    } = &borrowed.operations()[0]
+    else {
+        panic!("expected a class assertion");
+    };
+    let ClassExpression::DataHasValue { value, .. } = class else {
+        panic!("expected a data value");
+    };
+    let Individual::Anonymous(id) = individual else {
+        panic!("expected an anonymous individual");
+    };
+    assert_eq!(id.scope().as_str(), "urn:scope");
+    assert_eq!(id.label(), "same-local-label");
+    // Both identity and literal text are lent from the serialized input buffer.
+    for payload in [value.lexical(), id.label()] {
+        let pointer = payload.as_ptr() as usize;
+        let start = bytes.as_ptr() as usize;
+        assert!(pointer >= start && pointer + payload.len() <= start + bytes.len());
+    }
+    assert_eq!(postcard::to_allocvec(&borrowed).unwrap(), bytes);
 }
