@@ -74,8 +74,8 @@ fn iri(value: &str) -> Iri<String> {
 }
 
 let customer = Entity::class(iri("https://example.org/Customer"));
-let declaration = Axiom::declaration(customer);
-let subclass = Axiom::sub_class_of(
+let declaration: Axiom = Axiom::declaration(customer);
+let subclass: Axiom = Axiom::sub_class_of(
     ClassExpression::named(iri("https://example.org/Customer")),
     ClassExpression::named(iri("https://example.org/Party")),
 );
@@ -87,9 +87,8 @@ assert!(matches!(subclass, Axiom::SubClassOf { .. }));
 ## Validation
 
 Constructors reject invalid structural shapes immediately. For example,
-equivalent classes require at least two operands and language-tagged literals
-require a non-empty language tag. Errors are returned as the typed
-`StructuralModelError` enum.
+equivalent classes require at least two operands. Structural errors use
+`StructuralModelError`; shared RDF constructors return `rdf_structural_model::ModelError`.
 
 ## Serialization
 
@@ -100,14 +99,43 @@ identities, annotations and all patch operations. Nested literals retain their
 exact lexical form and language metadata.
 
 Deserialization enforces the same local checks as constructors: operand counts,
-non-empty language tags and anonymous annotation labels, valid ontology identity
-combinations, and non-empty patches. This is structural validation, not full
-language-tag, datatype-value or OWL-profile validation. Public enum variants can
+well-formed language tags, coherent literal datatype/facets, scoped non-empty
+anonymous identities, valid ontology identity combinations, and non-empty patches.
+This does not evaluate datatype lexical spaces or validate OWL profiles. Public enum variants can
 still be assembled directly; callers should use checked constructors.
 
 Serde encodings do not implement RDF concrete syntaxes or OWL Functional-Style
 Syntax, and do not define canonical identity bytes or a stable storage protocol.
 Postcard is a test dependency, not a runtime encoding requirement.
+
+## Shared RDF values and caller representations
+
+`OwlLiteral` is a re-export of `rdf_structural_model::Literal`, and `BlankNodeId`
+is the shared scoped anonymous identity. Literal lexical forms remain exact;
+language-tag identity ignores ASCII case while serialization preserves spelling.
+Anonymous identities include an application-assigned scope IRI; identical local
+labels from different scopes are distinct. No global identifier allocation occurs.
+
+`Annotation<L, B>`, `AnnotationValue<L, B>`, `AxiomAnnotations<L, B>`,
+`Axiom<L, B>`, `OntologyPatch<L, B>` and `OntologyPatchOperation<L, B>` accept
+caller-owned literal and anonymous representations. `AnnotationSubject<B>` and
+`DataRange<L>`/`FacetRestriction<L>` propagate the corresponding representation.
+Defaults are the shared RDF literal and scoped blank node. Named OWL entities
+and property IRIs remain validated `Iri<String>` values. Construction imposes
+no serialization or cloning requirements on caller-supplied payloads; Serde and
+other derived traits are conditional on their corresponding traits.
+
+The shared literal default also represents RDF 1.2 directional language strings.
+Representability does not imply OWL 2 profile membership or inference support.
+Callers supplying custom values own their validation and semantic contracts;
+serialized payloads retain their selected type without JSON intermediates.
+
+This release replaces the old literal enum and unscoped label shape directly.
+Use `LanguageTag::try_new` before `OwlLiteral::language_tagged`, handle the result
+of `OwlLiteral::typed`, and supply `BlankNodeId::try_new(scope, label)` for
+anonymous annotations. Give generic constructors a result type, such as
+`let axiom: Axiom = Axiom::declaration(entity)`, when inputs do not determine the
+literal and anonymous types.
 
 ## Scope and memory
 
@@ -118,6 +146,8 @@ its own explicit limits or persistence strategy.
 
 ## Related crates
 
+- [`rdf-structural-model`](https://crates.io/crates/rdf-structural-model) —
+  shared RDF literals, scoped blank nodes, triples/quads and borrowed values.
 - [`iri-rfc3987`](https://crates.io/crates/iri-rfc3987) — typed IRI parsing,
   validation, and resolution.
 - [`iri-namespace`](https://crates.io/crates/iri-namespace) — validated RDF

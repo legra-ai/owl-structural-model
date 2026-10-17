@@ -10,7 +10,6 @@ mod data_range;
 mod entity;
 mod error;
 mod key;
-mod literal;
 mod ontology;
 mod patch;
 mod property_axiom;
@@ -24,10 +23,10 @@ pub use data_range::{DataRange, FacetRestriction};
 pub use entity::{Entity, EntityKind};
 pub use error::StructuralModelError;
 pub use key::KeyProperties;
-pub use literal::OwlLiteral;
 pub use ontology::{OntologyId, OntologyIdentity};
 pub use patch::{OntologyPatch, OntologyPatchOperation};
 pub use property_chain::{ObjectPropertyChain, SubObjectPropertyExpression};
+pub use rdf_structural_model::{BlankNodeId, Literal as OwlLiteral};
 
 #[cfg(test)]
 mod tests {
@@ -41,7 +40,7 @@ mod tests {
 
     #[test]
     fn constructors_preserve_structural_shape() {
-        let axiom = Axiom::sub_class_of(
+        let axiom: Axiom = Axiom::sub_class_of(
             ClassExpression::named(iri("https://example.org/Customer")),
             ClassExpression::named(iri("https://example.org/Party")),
         );
@@ -58,8 +57,7 @@ mod tests {
         let error = ClassExpression::object_union_of(Vec::new()).unwrap_err();
         assert!(matches!(error, StructuralModelError::InvalidFormat { .. }));
 
-        let error = OwlLiteral::language_tagged("hello", "").unwrap_err();
-        assert!(matches!(error, StructuralModelError::Empty { .. }));
+        assert!(rdf_structural_model::LanguageTag::try_new("").is_err());
     }
 
     #[test]
@@ -73,7 +71,7 @@ mod tests {
     /// use owl_structural_model::{Axiom, ClassExpression};
     ///
     /// let parse = |value: &str| Iri::parse(value).expect("valid IRI").into();
-    /// let axiom = Axiom::sub_class_of(
+    /// let axiom: Axiom = Axiom::sub_class_of(
     ///     ClassExpression::named(parse("https://example.org/Customer")),
     ///     ClassExpression::named(parse("https://example.org/Party")),
     /// );

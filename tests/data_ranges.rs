@@ -3,7 +3,9 @@
 mod support;
 
 use iri_rfc3987::Iri;
-use owl_structural_model::{DataRange, FacetRestriction, OwlLiteral};
+use owl_structural_model::OwlLiteral;
+type DataRange = owl_structural_model::DataRange;
+type FacetRestriction = owl_structural_model::FacetRestriction;
 
 fn iri(value: &str) -> Iri<String> {
     Iri::parse(value).unwrap().into()
@@ -16,7 +18,7 @@ fn datatype(name: &str) -> DataRange {
 #[test]
 fn every_data_range_form_round_trips_with_exact_literals() {
     let integer = iri("http://www.w3.org/2001/XMLSchema#integer");
-    let five = OwlLiteral::typed("005", integer.clone());
+    let five = OwlLiteral::typed("005", integer.clone()).unwrap();
     let min = FacetRestriction::new(
         iri("http://www.w3.org/2001/XMLSchema#minInclusive"),
         five.clone(),
@@ -35,7 +37,10 @@ fn every_data_range_form_round_trips_with_exact_literals() {
         DataRange::data_complement_of(restricted.clone()),
         DataRange::data_one_of(vec![
             five.clone(),
-            OwlLiteral::language_tagged("cinq", "fr").unwrap(),
+            OwlLiteral::language_tagged(
+                "cinq",
+                rdf_structural_model::LanguageTag::try_new("fr".to_owned()).unwrap(),
+            ),
         ])
         .unwrap(),
         restricted,
@@ -45,7 +50,7 @@ fn every_data_range_form_round_trips_with_exact_literals() {
     }
     assert_ne!(
         five,
-        OwlLiteral::typed("5", iri("http://www.w3.org/2001/XMLSchema#integer"))
+        OwlLiteral::typed("5", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap()
     );
 }
 

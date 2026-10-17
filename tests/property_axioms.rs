@@ -4,9 +4,13 @@ mod support;
 
 use iri_rfc3987::Iri;
 use owl_structural_model::{
-    Annotation, AnnotationValue, Axiom, AxiomAnnotations, ObjectPropertyChain,
-    ObjectPropertyExpression, StructuralModelError, SubObjectPropertyExpression,
+    ObjectPropertyChain, ObjectPropertyExpression, StructuralModelError,
+    SubObjectPropertyExpression,
 };
+type Annotation = owl_structural_model::Annotation;
+type AnnotationValue = owl_structural_model::AnnotationValue;
+type Axiom = owl_structural_model::Axiom;
+type AxiomAnnotations = owl_structural_model::AxiomAnnotations;
 
 fn iri(value: &str) -> Iri<String> {
     Iri::parse(value).unwrap().into()

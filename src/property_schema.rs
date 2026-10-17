@@ -8,7 +8,7 @@ use crate::{
     StructuralModelError,
 };
 
-impl Axiom {
+impl<L, B> Axiom<L, B> {
     /// Create an object property domain axiom without annotations.
     #[must_use]
     pub fn object_property_domain(
@@ -130,7 +130,7 @@ impl Axiom {
 
     /// Create a data property range without annotations.
     #[must_use]
-    pub fn data_property_range(property: Iri<String>, range: DataRange) -> Self {
+    pub fn data_property_range(property: Iri<String>, range: DataRange<L>) -> Self {
         Self::DataPropertyRange {
             property,
             range,
@@ -140,7 +140,7 @@ impl Axiom {
 
     /// Create a datatype definition without annotations.
     #[must_use]
-    pub fn datatype_definition(datatype: Iri<String>, range: DataRange) -> Self {
+    pub fn datatype_definition(datatype: Iri<String>, range: DataRange<L>) -> Self {
         Self::DatatypeDefinition {
             datatype,
             range,

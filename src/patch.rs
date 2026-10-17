@@ -8,14 +8,17 @@ const KIND_ONTOLOGY_PATCH: &str = "ontology patch";
 
 /// A non-empty collection of structural changes for one ontology identity.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(try_from = "OntologyPatchInput")]
-pub struct OntologyPatch {
+#[serde(
+    try_from = "OntologyPatchInput<L, B>",
+    bound(deserialize = "L: serde::Deserialize<'de>, B: serde::Deserialize<'de>")
+)]
+pub struct OntologyPatch<L = crate::OwlLiteral, B = crate::BlankNodeId> {
     target: OntologyId,
     // bounded: one submitted patch/change request, never a workspace stream.
-    operations: Vec<OntologyPatchOperation>,
+    operations: Vec<OntologyPatchOperation<L, B>>,
 }
 
-impl OntologyPatch {
+impl<L, B> OntologyPatch<L, B> {
     /// Create a non-empty ontology patch.
     ///
     /// # Errors
@@ -24,7 +27,7 @@ impl OntologyPatch {
     /// supplied.
     pub fn try_new(
         target: OntologyId,
-        operations: Vec<OntologyPatchOperation>,
+        operations: Vec<OntologyPatchOperation<L, B>>,
     ) -> Result<Self, StructuralModelError> {
         if operations.is_empty() {
             return Err(StructuralModelError::InvalidFormat {
@@ -44,14 +47,14 @@ impl OntologyPatch {
 
     /// Return patch operations.
     #[must_use]
-    pub fn operations(&self) -> &[OntologyPatchOperation] {
+    pub fn operations(&self) -> &[OntologyPatchOperation<L, B>] {
         &self.operations
     }
 }
 
 /// One structural ontology patch operation.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum OntologyPatchOperation {
+pub enum OntologyPatchOperation<L = crate::OwlLiteral, B = crate::BlankNodeId> {
     /// Add an import declaration.
     AddImport {
         /// Imported ontology IRI.
@@ -65,37 +68,37 @@ pub enum OntologyPatchOperation {
     /// Add an ontology annotation.
     AddAnnotation {
         /// Ontology annotation.
-        annotation: Annotation,
+        annotation: Annotation<L, B>,
     },
     /// Remove an ontology annotation.
     RemoveAnnotation {
         /// Ontology annotation.
-        annotation: Annotation,
+        annotation: Annotation<L, B>,
     },
     /// Add a structural axiom.
     AddAxiom {
         /// Structural axiom.
-        axiom: Axiom,
+        axiom: Axiom<L, B>,
     },
     /// Remove a structural axiom.
     RemoveAxiom {
         /// Structural axiom.
-        axiom: Axiom,
+        axiom: Axiom<L, B>,
     },
 }
 
 #[derive(serde::Deserialize)]
-#[serde(rename = "OntologyPatch")]
-struct OntologyPatchInput {
+#[serde(rename = "OntologyPatch<L, B>")]
+struct OntologyPatchInput<L, B> {
     target: OntologyId,
     // bounded: operations of one submitted structural patch.
-    operations: Vec<OntologyPatchOperation>,
+    operations: Vec<OntologyPatchOperation<L, B>>,
 }
 
-impl TryFrom<OntologyPatchInput> for OntologyPatch {
+impl<L, B> TryFrom<OntologyPatchInput<L, B>> for OntologyPatch<L, B> {
     type Error = StructuralModelError;
 
-    fn try_from(input: OntologyPatchInput) -> Result<Self, Self::Error> {
+    fn try_from(input: OntologyPatchInput<L, B>) -> Result<Self, Self::Error> {
         Self::try_new(input.target, input.operations)
     }
 }
