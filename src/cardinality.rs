@@ -1,6 +1,8 @@
 //! Unbounded nonnegative cardinalities from the OWL functional grammar.
 
 use crate::StructuralModelError;
+use std::cmp::Ordering;
+
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// An arbitrary-size nonnegative integer, independent of machine word width.
@@ -38,6 +40,21 @@ impl Cardinality {
 impl From<u64> for Cardinality {
     fn from(value: u64) -> Self {
         Self(value.to_string())
+    }
+}
+
+impl PartialOrd for Cardinality {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Cardinality {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0
+            .len()
+            .cmp(&other.0.len())
+            .then_with(|| self.0.cmp(&other.0))
     }
 }
 impl<'de> Deserialize<'de> for Cardinality {

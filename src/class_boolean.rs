@@ -1,6 +1,7 @@
 //! Constructors for Boolean class expressions and object restrictions.
 use crate::{
-    ClassExpression, Individual, ObjectPropertyExpression, OperandSet, StructuralModelError,
+    ClassExpression, Individual, OWL_NOTHING, OWL_THING, ObjectPropertyExpression, OperandSet,
+    StructuralModelError,
 };
 use iri_rfc3987::Iri;
 
@@ -13,12 +14,22 @@ impl<L, B> ClassExpression<L, B> {
     /// Create owl:Thing as a named class.
     #[must_use]
     pub fn thing() -> Self {
-        Self::named(Self::builtin("http://www.w3.org/2002/07/owl#Thing"))
+        Self::named(Self::builtin(OWL_THING))
     }
     /// Create owl:Nothing as a named class.
     #[must_use]
     pub fn nothing() -> Self {
-        Self::named(Self::builtin("http://www.w3.org/2002/07/owl#Nothing"))
+        Self::named(Self::builtin(OWL_NOTHING))
+    }
+    /// Return whether this expression is the named universal class.
+    #[must_use]
+    pub fn is_thing(&self) -> bool {
+        matches!(self, Self::Named(iri) if iri.as_str() == OWL_THING)
+    }
+    /// Return whether this expression is the named empty class.
+    #[must_use]
+    pub fn is_nothing(&self) -> bool {
+        matches!(self, Self::Named(iri) if iri.as_str() == OWL_NOTHING)
     }
     pub(crate) fn builtin(value: &'static str) -> Iri<String> {
         Iri::parse(value)

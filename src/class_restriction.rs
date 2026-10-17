@@ -1,6 +1,8 @@
 //! Cardinality and data-property restriction constructors.
 use crate::ObjectPropertyExpression;
-use crate::{Cardinality, ClassExpression, DataRange, OperandList, StructuralModelError};
+use crate::{
+    Cardinality, ClassExpression, DataRange, OperandList, RDFS_LITERAL, StructuralModelError,
+};
 use iri_rfc3987::Iri;
 impl<L, B> ClassExpression<L, B> {
     /// Create an object minimum cardinality restriction; no filler means owl:Thing.
@@ -29,7 +31,7 @@ impl<L, B> ClassExpression<L, B> {
             filler: Box::new(filler.unwrap_or_else(Self::thing)),
         }
     }
-    /// Create an object exactimum cardinality restriction; no filler means owl:Thing.
+    /// Create an object exact cardinality restriction; no filler means owl:Thing.
     #[must_use]
     pub fn object_exact_cardinality(
         cardinality: Cardinality,
@@ -81,11 +83,7 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataMinCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| {
-                DataRange::datatype(Self::builtin(
-                    "http://www.w3.org/2000/01/rdf-schema#Literal",
-                ))
-            }),
+            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
         }
     }
     /// Create a data maximum cardinality restriction; no range means rdfs:Literal.
@@ -98,14 +96,10 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataMaxCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| {
-                DataRange::datatype(Self::builtin(
-                    "http://www.w3.org/2000/01/rdf-schema#Literal",
-                ))
-            }),
+            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
         }
     }
-    /// Create a data exactimum cardinality restriction; no range means rdfs:Literal.
+    /// Create a data exact cardinality restriction; no range means rdfs:Literal.
     #[must_use]
     pub fn data_exact_cardinality(
         cardinality: Cardinality,
@@ -115,11 +109,7 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataExactCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| {
-                DataRange::datatype(Self::builtin(
-                    "http://www.w3.org/2000/01/rdf-schema#Literal",
-                ))
-            }),
+            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
         }
     }
 }

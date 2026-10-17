@@ -183,6 +183,9 @@ fn cardinalities_are_unbounded_integer_values() {
         "18446744073709551616000000000000000000000000000"
     );
     support::assert_round_trip(&cardinality());
+    assert!(cardinality() > Cardinality::from(u64::MAX));
+    assert!(Cardinality::from(9) < Cardinality::from(10));
+    assert!(Cardinality::from(19) < Cardinality::from(20));
     // bounded: malformed numeric categories from the nonNegativeInteger grammar.
     for invalid in ["", "-1", "+1", "1.0", " 1", "1e3", "١"] {
         assert!(Cardinality::try_new(invalid).is_err());

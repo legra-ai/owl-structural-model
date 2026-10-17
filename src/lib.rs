@@ -27,6 +27,7 @@ mod patch;
 mod property_axiom;
 mod property_chain;
 mod property_schema;
+mod vocabulary;
 
 pub use annotation::{Annotation, AnnotationSubject, AnnotationValue, AxiomAnnotations};
 pub use axiom::Axiom;
@@ -44,6 +45,7 @@ pub use operands::OperandList;
 pub use patch::{OntologyPatch, OntologyPatchOperation};
 pub use property_chain::{ObjectPropertyChain, SubObjectPropertyExpression};
 pub use rdf_structural_model::{BlankNodeId, Literal as OwlLiteral};
+pub use vocabulary::{OWL_NOTHING, OWL_THING, RDFS_LITERAL};
 
 #[cfg(test)]
 mod tests {
