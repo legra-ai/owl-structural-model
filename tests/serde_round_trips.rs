@@ -4,10 +4,16 @@ mod support;
 
 use iri_rfc3987::Iri;
 use owl_structural_model::{
-    Annotation, AnnotationSubject, AnnotationValue, Axiom, AxiomAnnotations, ClassExpression,
-    Entity, EntityKind, ObjectPropertyExpression, OntologyId, OntologyPatch,
-    OntologyPatchOperation, OwlLiteral, SubObjectPropertyExpression,
+    ClassExpression, Entity, EntityKind, ObjectPropertyExpression, OntologyId, OwlLiteral,
+    SubObjectPropertyExpression,
 };
+type Annotation = owl_structural_model::Annotation;
+type AnnotationSubject = owl_structural_model::AnnotationSubject;
+type AnnotationValue = owl_structural_model::AnnotationValue;
+type Axiom = owl_structural_model::Axiom;
+type AxiomAnnotations = owl_structural_model::AxiomAnnotations;
+type OntologyPatch = owl_structural_model::OntologyPatch;
+type OntologyPatchOperation = owl_structural_model::OntologyPatchOperation;
 
 fn iri(value: &str) -> Iri<String> {
     Iri::parse(value).unwrap().into()
@@ -65,7 +71,10 @@ fn every_ontology_identity_form_round_trips() {
 fn all_patch_operations_round_trip_with_nested_annotations() {
     let annotation = Annotation::new(
         iri("urn:label"),
-        AnnotationValue::Literal(OwlLiteral::language_tagged("café", "fr").unwrap()),
+        AnnotationValue::Literal(OwlLiteral::language_tagged(
+            "café",
+            rdf_structural_model::LanguageTag::try_new("fr".to_owned()).unwrap(),
+        )),
     );
     let axiom = Axiom::declaration(Entity::class(iri("urn:class")))
         .with_annotations(AxiomAnnotations::new(vec![annotation.clone()]));
@@ -106,18 +115,28 @@ fn class_axioms_and_annotation_forms_round_trip() {
     ] {
         support::assert_round_trip(&axiom);
     }
-    let literal = OwlLiteral::typed("005", iri("http://www.w3.org/2001/XMLSchema#integer"));
+    let literal =
+        OwlLiteral::typed("005", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap();
     // bounded: both annotation-subject forms.
     for subject in [
         AnnotationSubject::Iri(iri("urn:subject")),
-        AnnotationSubject::AnonymousIndividual("b0".to_owned()),
+        AnnotationSubject::AnonymousIndividual(
+            rdf_structural_model::BlankNodeId::try_new(iri("urn:document"), "b0".to_owned())
+                .unwrap(),
+        ),
     ] {
         // bounded: all three annotation-value categories and both literal variants.
         for value in [
             AnnotationValue::Iri(iri("urn:value")),
-            AnnotationValue::anonymous_individual("b1").unwrap(),
+            AnnotationValue::anonymous_individual(
+                rdf_structural_model::BlankNodeId::try_new(iri("urn:document"), "b1".to_owned())
+                    .unwrap(),
+            ),
             AnnotationValue::Literal(literal.clone()),
-            AnnotationValue::Literal(OwlLiteral::language_tagged("bonjour", "fr").unwrap()),
+            AnnotationValue::Literal(OwlLiteral::language_tagged(
+                "bonjour",
+                rdf_structural_model::LanguageTag::try_new("fr".to_owned()).unwrap(),
+            )),
         ] {
             support::assert_round_trip(&Axiom::AnnotationAssertion {
                 property: iri("urn:annotation"),

@@ -4,7 +4,7 @@ use iri_rfc3987::Iri;
 
 use crate::{Axiom, AxiomAnnotations, ObjectPropertyExpression, SubObjectPropertyExpression};
 
-impl Axiom {
+impl<L, B> Axiom<L, B> {
     /// Create an object subproperty or property-chain inclusion without annotations.
     #[must_use]
     pub fn sub_object_property_of(
@@ -92,7 +92,7 @@ impl Axiom {
 
     /// Return this axiom's annotations.
     #[must_use]
-    pub fn annotations(&self) -> &AxiomAnnotations {
+    pub fn annotations(&self) -> &AxiomAnnotations<L, B> {
         match self {
             Self::Declaration { annotations, .. }
             | Self::SubClassOf { annotations, .. }
@@ -125,7 +125,7 @@ impl Axiom {
 
     /// Replace this axiom's annotations, preserving its structural operands.
     #[must_use]
-    pub fn with_annotations(mut self, new_annotations: AxiomAnnotations) -> Self {
+    pub fn with_annotations(mut self, new_annotations: AxiomAnnotations<L, B>) -> Self {
         match &mut self {
             Self::Declaration { annotations, .. }
             | Self::SubClassOf { annotations, .. }
