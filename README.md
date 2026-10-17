@@ -13,10 +13,12 @@ annotations, axioms, ontology identity, and structural patches. It is intended
 for parsers, editors, validators, serializers, and storage adapters that need
 typed OWL values without taking a dependency on an RDF store or a reasoner.
 
-The target standard is OWL 2, the current version of the W3C Web Ontology
-Language. This crate models a deliberately small, currently supported subset
-of the OWL 2 structural specification; it is not an OWL 2 parser, reasoner, or
-full conformance implementation, and it does not model the older OWL 1 API.
+The model represents all 37 OWL 2 axiom families, all 18 class-expression forms,
+all six unary data-range forms, individuals and recursively nested annotations.
+Its target is the W3C OWL 2 structural grammar. Structural representation is
+separate from concrete-syntax parsing, RDF mapping, datatype evaluation,
+ontology-wide OWL 2 DL validation and reasoning. Those execution layers are not
+implemented by this crate. See [coverage and boundaries](COMPLETENESS.md).
 
 ## W3C specifications
 
@@ -35,7 +37,16 @@ The crate keeps the structural layer explicit:
 - `DataRange` represents named datatypes, intersections, unions, complements,
   literal enumerations and facet restrictions. Constructors and deserialization
   check structural arity; datatype value evaluation stays outside the model.
-- `Axiom` represents the currently supported structural axiom forms.
+- `Axiom` represents every standard axiom family, including individual assertions,
+  negative assertions, disjoint unions and annotation-property axioms.
+- `Individual<B>` distinguishes named and caller-owned anonymous individuals.
+- `ClassExpression<L, B>` covers Boolean expressions, individual enumerations,
+  object/data restrictions and all cardinality restrictions.
+- `Cardinality` preserves arbitrary-size nonnegative integer values without a
+  machine-word limit. Omitted qualifiers become explicit `owl:Thing` or
+  `rdfs:Literal` fillers; RDF literal lexical forms remain untouched.
+- `AxiomKind`, `ClassExpressionKind` and `DataRangeKind` provide reusable typed
+  visitor/diagnostic categories.
 - Property axioms include all seven object-property characteristics, functional
   data properties, and object subproperty inclusions with either a single
   property expression or an ordered `ObjectPropertyChain`. Chains preserve
@@ -47,7 +58,7 @@ The crate keeps the structural layer explicit:
   key with neither, including during deserialization. `Axiom::has_key` associates
   those properties with a class expression; it does not execute key reasoning.
 - `OntologyId` represents anonymous, named, and versioned ontology identity.
-- `OntologyPatch` represents a non-empty set of changes to one ontology.
+- `OntologyPatch` represents a non-empty ordered sequence of changes to one ontology.
 
 It does not parse files, perform I/O, access a graph store, run a reasoner,
 or choose an application-specific profile. A caller can stream a document as
@@ -101,8 +112,11 @@ exact lexical form and language metadata.
 Deserialization enforces the same local checks as constructors: operand counts,
 well-formed language tags, coherent literal datatype/facets, scoped non-empty
 anonymous identities, valid ontology identity combinations, and non-empty patches.
-This does not evaluate datatype lexical spaces or validate OWL profiles. Public enum variants can
-still be assembled directly; callers should use checked constructors.
+This does not evaluate datatype lexical spaces or validate OWL profiles.
+Arity-bearing enum fields use checked `OperandSet`/`OperandList` types, so direct
+enum assembly cannot bypass their minimum occurrence counts. Unknown fields
+in semantic objects and unknown enum variants fail during deserialization.
+Caller-selected payload types enforce their own invariants.
 
 Serde encodings do not implement RDF concrete syntaxes or OWL Functional-Style
 Syntax, and do not define canonical identity bytes or a stable storage protocol.
@@ -118,7 +132,7 @@ labels from different scopes are distinct. No global identifier allocation occur
 
 `Annotation<L, B>`, `AnnotationValue<L, B>`, `AxiomAnnotations<L, B>`,
 `Axiom<L, B>`, `OntologyPatch<L, B>` and `OntologyPatchOperation<L, B>` accept
-caller-owned literal and anonymous representations. `AnnotationSubject<B>` and
+caller-owned literal and anonymous representations. `ClassExpression<L, B>`, `Individual<B>`, `AnnotationSubject<B>` and
 `DataRange<L>`/`FacetRestriction<L>` propagate the corresponding representation.
 Defaults are the shared RDF literal and scoped blank node. Named OWL entities
 and property IRIs remain validated `Iri<String>` values. Construction imposes
@@ -130,12 +144,30 @@ Representability does not imply OWL 2 profile membership or inference support.
 Callers supplying custom values own their validation and semantic contracts;
 serialized payloads retain their selected type without JSON intermediates.
 
-This release replaces the old literal enum and unscoped label shape directly.
 Use `LanguageTag::try_new` before `OwlLiteral::language_tagged`, handle the result
-of `OwlLiteral::typed`, and supply `BlankNodeId::try_new(scope, label)` for
-anonymous annotations. Give generic constructors a result type, such as
-`let axiom: Axiom = Axiom::declaration(entity)`, when inputs do not determine the
-literal and anonymous types.
+of `OwlLiteral::typed`, and supply `BlankNodeId::try_new(scope, label)` for anonymous
+individuals. Give generic constructors a result type when inputs do not determine
+the literal and anonymous types, such as `let axiom: Axiom = Axiom::declaration(entity)`.
+
+## Structural identity
+
+Unordered OWL associations use `OperandSet`; equality and hashing ignore source
+order and repeated equal members, including nested annotations, keys and data
+ranges. `UnorderedPair` gives inverse-property axioms unordered identity with
+exactly two source occurrences. Property chains, patch operations and the property
+positions of n-ary data restrictions retain order and repetition.
+
+Source occurrence order remains available for iteration and Serde. `MIN` checks
+functional-syntax occurrence arity; source syntax may repeat a member. Serde is
+not a canonical encoding. Equality relies on the caller's payload equality,
+which must represent its intended structural identity. Hashing relies on the
+corresponding `Hash` contract. This is structural equality, not entailment or
+datatype value equality.
+
+`owl:Thing` and `owl:Nothing` each have one representation as named class IRIs.
+Use `ClassExpression::thing()`/`nothing()` and `is_thing()`/`is_nothing()` for their
+standard construction and classification. Inverses contain a named property IRI,
+rather than recursively nesting inverse expressions.
 
 ## Scope and memory
 
