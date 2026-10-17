@@ -9,6 +9,7 @@ use crate::{ObjectPropertyExpression, OperandSet, StructuralModelError};
 /// Either list can be empty; together they must contain at least one property.
 /// Object and data properties remain separate even if their IRIs coincide.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(try_from = "KeyPropertiesInput")]
 pub struct KeyProperties {
     // bounded: object properties in one caller-owned structural key axiom.
@@ -54,6 +55,7 @@ impl KeyProperties {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct KeyPropertiesInput {
     // bounded: object properties of one deserialized structural key axiom.
     object_properties: Vec<ObjectPropertyExpression>,

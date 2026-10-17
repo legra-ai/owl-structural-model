@@ -8,6 +8,7 @@ const KIND_ONTOLOGY_PATCH: &str = "ontology patch";
 
 /// A non-empty collection of structural changes for one ontology identity.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(
     try_from = "OntologyPatchInput<L, B>",
     bound(deserialize = "L: serde::Deserialize<'de>, B: serde::Deserialize<'de>")
@@ -54,6 +55,7 @@ impl<L, B> OntologyPatch<L, B> {
 
 /// One structural ontology patch operation.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum OntologyPatchOperation<L = crate::OwlLiteral, B = crate::BlankNodeId> {
     /// Add an import declaration.
     AddImport {
@@ -88,6 +90,7 @@ pub enum OntologyPatchOperation<L = crate::OwlLiteral, B = crate::BlankNodeId> {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename = "OntologyPatch<L, B>")]
 struct OntologyPatchInput<L, B> {
     target: OntologyId,

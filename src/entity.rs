@@ -4,6 +4,7 @@ use iri_rfc3987::Iri;
 
 /// Kind of OWL entity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum EntityKind {
     /// OWL class.
     Class,
@@ -21,6 +22,7 @@ pub enum EntityKind {
 
 /// An OWL entity declaration target.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Entity {
     kind: EntityKind,
     iri: Iri<String>,

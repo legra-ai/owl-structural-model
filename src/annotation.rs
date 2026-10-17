@@ -6,6 +6,7 @@ use crate::{BlankNodeId, OperandSet, OwlLiteral};
 
 /// An OWL annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Annotation<L = OwlLiteral, B = BlankNodeId> {
     annotations: AxiomAnnotations<L, B>,
     property: Iri<String>,
@@ -49,6 +50,7 @@ impl<L, B> Annotation<L, B> {
 
 /// A value that can appear in an OWL annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum AnnotationValue<L = OwlLiteral, B = BlankNodeId> {
     /// An IRI-valued annotation.
     Iri(Iri<String>),
@@ -68,6 +70,7 @@ impl<L, B> AnnotationValue<L, B> {
 
 /// Subject of an OWL annotation assertion.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum AnnotationSubject<B = BlankNodeId> {
     /// An IRI subject.
     Iri(Iri<String>),
@@ -77,6 +80,7 @@ pub enum AnnotationSubject<B = BlankNodeId> {
 
 /// Axiom annotations attached to one structural axiom.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AxiomAnnotations<L = OwlLiteral, B = BlankNodeId> {
     // bounded: annotations belong to one structural axiom.
     annotations: OperandSet<Annotation<L, B>>,

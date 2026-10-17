@@ -9,6 +9,7 @@ use crate::{DataRangeKind, OperandSet, OwlLiteral, StructuralModelError};
 /// Whether a facet and value belong to a datatype's facet space is a semantic
 /// validation concern, not a structural constructor invariant.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FacetRestriction<L = OwlLiteral> {
     facet: Iri<String>,
     value: L,

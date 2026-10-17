@@ -10,6 +10,7 @@ const KIND_ONTOLOGY_ID: &str = "ontology ID";
 
 /// OWL ontology identity: optional ontology IRI plus optional version IRI.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(try_from = "OntologyIdInput")]
 pub struct OntologyId {
     ontology_iri: Option<Iri<String>>,
@@ -101,6 +102,7 @@ impl Display for OntologyId {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(rename = "OntologyId")]
 struct OntologyIdInput {
     ontology_iri: Option<Iri<String>>,
