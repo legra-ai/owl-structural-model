@@ -4,9 +4,10 @@ mod support;
 
 use iri_rfc3987::Iri;
 use owl_structural_model::{
-    ClassExpression, Entity, EntityKind, ObjectPropertyExpression, OntologyId, OwlLiteral,
+    Entity, EntityKind, ObjectPropertyExpression, OntologyId, OwlLiteral,
     SubObjectPropertyExpression,
 };
+type ClassExpression = owl_structural_model::ClassExpression;
 type Annotation = owl_structural_model::Annotation;
 type AnnotationSubject = owl_structural_model::AnnotationSubject;
 type AnnotationValue = owl_structural_model::AnnotationValue;
@@ -37,16 +38,15 @@ fn every_entity_kind_round_trips() {
 #[test]
 fn every_class_expression_form_round_trips() {
     let named = ClassExpression::named(iri("urn:class"));
-    let property =
-        ObjectPropertyExpression::inverse_of(ObjectPropertyExpression::named(iri("urn:p")));
+    let property = ObjectPropertyExpression::inverse_of(iri("urn:p"));
     // bounded: one example of each supported class-expression form.
     for expression in [
         named.clone(),
-        ClassExpression::Thing,
-        ClassExpression::Nothing,
-        ClassExpression::object_intersection_of(vec![named.clone(), ClassExpression::Thing])
+        ClassExpression::thing(),
+        ClassExpression::nothing(),
+        ClassExpression::object_intersection_of(vec![named.clone(), ClassExpression::thing()])
             .unwrap(),
-        ClassExpression::object_union_of(vec![named.clone(), ClassExpression::Nothing]).unwrap(),
+        ClassExpression::object_union_of(vec![named.clone(), ClassExpression::nothing()]).unwrap(),
         ClassExpression::object_complement_of(named.clone()),
         ClassExpression::object_some_values_from(property.clone(), named.clone()),
         ClassExpression::object_all_values_from(property, named),
@@ -105,9 +105,11 @@ fn all_patch_operations_round_trip_with_nested_annotations() {
 fn class_axioms_and_annotation_forms_round_trip() {
     // bounded: the class axiom forms not exercised by the property-axiom suites.
     for axiom in [
-        Axiom::sub_class_of(ClassExpression::Thing, ClassExpression::Nothing),
-        Axiom::equivalent_classes(vec![ClassExpression::Thing, ClassExpression::Nothing]).unwrap(),
-        Axiom::disjoint_classes(vec![ClassExpression::Thing, ClassExpression::Nothing]).unwrap(),
+        Axiom::sub_class_of(ClassExpression::thing(), ClassExpression::nothing()),
+        Axiom::equivalent_classes(vec![ClassExpression::thing(), ClassExpression::nothing()])
+            .unwrap(),
+        Axiom::disjoint_classes(vec![ClassExpression::thing(), ClassExpression::nothing()])
+            .unwrap(),
         Axiom::sub_object_property_of(
             SubObjectPropertyExpression::Property(ObjectPropertyExpression::named(iri("urn:p"))),
             ObjectPropertyExpression::named(iri("urn:q")),

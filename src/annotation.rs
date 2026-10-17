@@ -2,11 +2,12 @@
 
 use iri_rfc3987::Iri;
 
-use crate::{BlankNodeId, OwlLiteral};
+use crate::{BlankNodeId, OperandSet, OwlLiteral};
 
 /// An OWL annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct Annotation<L = OwlLiteral, B = BlankNodeId> {
+    annotations: AxiomAnnotations<L, B>,
     property: Iri<String>,
     value: AnnotationValue<L, B>,
 }
@@ -15,9 +16,24 @@ impl<L, B> Annotation<L, B> {
     /// Create an annotation from an annotation property IRI and value.
     #[must_use]
     pub fn new(property: Iri<String>, value: AnnotationValue<L, B>) -> Self {
-        Self { property, value }
+        Self {
+            annotations: AxiomAnnotations::empty(),
+            property,
+            value,
+        }
     }
 
+    /// Replace the annotations attached to this annotation.
+    #[must_use]
+    pub fn with_annotations(mut self, annotations: AxiomAnnotations<L, B>) -> Self {
+        self.annotations = annotations;
+        self
+    }
+    /// Return recursively nested annotations.
+    #[must_use]
+    pub fn annotations(&self) -> &AxiomAnnotations<L, B> {
+        &self.annotations
+    }
     /// Return the annotation property IRI.
     #[must_use]
     pub fn property(&self) -> &Iri<String> {
@@ -63,7 +79,7 @@ pub enum AnnotationSubject<B = BlankNodeId> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct AxiomAnnotations<L = OwlLiteral, B = BlankNodeId> {
     // bounded: annotations belong to one structural axiom.
-    annotations: Vec<Annotation<L, B>>,
+    annotations: OperandSet<Annotation<L, B>>,
 }
 
 impl<L, B> AxiomAnnotations<L, B> {
@@ -76,13 +92,15 @@ impl<L, B> AxiomAnnotations<L, B> {
     /// Create annotations from a bounded axiom-local collection.
     #[must_use]
     pub fn new(annotations: Vec<Annotation<L, B>>) -> Self {
-        Self { annotations }
+        Self {
+            annotations: OperandSet::new(annotations),
+        }
     }
 
     /// Return the annotations.
     #[must_use]
     pub fn as_slice(&self) -> &[Annotation<L, B>] {
-        &self.annotations
+        self.annotations.as_slice()
     }
 
     /// Return the annotation count.
@@ -101,7 +119,7 @@ impl<L, B> AxiomAnnotations<L, B> {
 impl<L, B> Default for AxiomAnnotations<L, B> {
     fn default() -> Self {
         Self {
-            annotations: Vec::new(),
+            annotations: OperandSet::new(Vec::new()),
         }
     }
 }

@@ -2,7 +2,7 @@
 
 use iri_rfc3987::Iri;
 
-use crate::{ObjectPropertyExpression, StructuralModelError};
+use crate::{ObjectPropertyExpression, OperandSet, StructuralModelError};
 
 /// The object and data properties identifying instances in one `HasKey` axiom.
 ///
@@ -12,9 +12,9 @@ use crate::{ObjectPropertyExpression, StructuralModelError};
 #[serde(try_from = "KeyPropertiesInput")]
 pub struct KeyProperties {
     // bounded: object properties in one caller-owned structural key axiom.
-    object_properties: Vec<ObjectPropertyExpression>,
+    object_properties: OperandSet<ObjectPropertyExpression>,
     // bounded: data properties in one caller-owned structural key axiom.
-    data_properties: Vec<Iri<String>>,
+    data_properties: OperandSet<Iri<String>>,
 }
 
 impl KeyProperties {
@@ -35,21 +35,21 @@ impl KeyProperties {
             });
         }
         Ok(Self {
-            object_properties,
-            data_properties,
+            object_properties: OperandSet::new(object_properties),
+            data_properties: OperandSet::new(data_properties),
         })
     }
 
     /// Return the object property expressions.
     #[must_use]
     pub fn object_properties(&self) -> &[ObjectPropertyExpression] {
-        &self.object_properties
+        self.object_properties.as_slice()
     }
 
     /// Return the named data properties.
     #[must_use]
     pub fn data_properties(&self) -> &[Iri<String>] {
-        &self.data_properties
+        self.data_properties.as_slice()
     }
 }
 

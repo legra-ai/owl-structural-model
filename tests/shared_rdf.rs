@@ -3,9 +3,10 @@
 mod support;
 
 use iri_rfc3987::Iri;
+use owl_structural_model::DataRange;
 use owl_structural_model::{
-    Annotation, AnnotationSubject, AnnotationValue, Axiom, AxiomAnnotations, DataRange,
-    FacetRestriction, OntologyId, OntologyPatch, OntologyPatchOperation, OwlLiteral,
+    Annotation, AnnotationSubject, AnnotationValue, Axiom, AxiomAnnotations, FacetRestriction,
+    OntologyId, OntologyPatch, OntologyPatchOperation, OwlLiteral,
 };
 use rdf_structural_model::{BaseDirection, BlankNodeId, LanguageTag, Literal, LiteralMetadata};
 use serde::{Deserialize, Serialize};

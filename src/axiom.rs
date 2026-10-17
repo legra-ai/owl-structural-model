@@ -1,299 +1,321 @@
-//! OWL structural axioms.
-
-use iri_rfc3987::Iri;
+//! All 37 OWL 2 axiom families.
 
 use crate::{
     AnnotationSubject, AnnotationValue, AxiomAnnotations, ClassExpression, DataRange, Entity,
-    KeyProperties, ObjectPropertyExpression, StructuralModelError, SubObjectPropertyExpression,
+    Individual, KeyProperties, ObjectPropertyExpression, OperandSet, SubObjectPropertyExpression,
+    UnorderedPair,
 };
+use iri_rfc3987::Iri;
 
-const KIND_AXIOM_OPERANDS: &str = "axiom operands";
-
-/// An OWL structural axiom.
+/// A structural OWL 2 axiom, independent of a backend or reasoner.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum Axiom<L = crate::OwlLiteral, B = crate::BlankNodeId> {
-    /// An entity declaration.
+    /// The `Declaration` axiom family.
     Declaration {
-        /// Declared OWL entity.
+        /// The entity operand.
         entity: Entity,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A subclass axiom.
+    /// The `SubClassOf` axiom family.
     SubClassOf {
-        /// Subclass expression.
-        sub_class: ClassExpression,
-        /// Superclass expression.
-        super_class: ClassExpression,
-        /// Axiom<L, B> annotations.
+        /// The sub class operand.
+        sub_class: ClassExpression<L, B>,
+        /// The super class operand.
+        super_class: ClassExpression<L, B>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An equivalent-classes axiom.
+    /// The `EquivalentClasses` axiom family.
     EquivalentClasses {
-        /// Equivalent class expressions.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_classes")]
-        classes: Vec<ClassExpression>,
-        /// Axiom<L, B> annotations.
+        /// The classes operand.
+        classes: OperandSet<ClassExpression<L, B>, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A disjoint-classes axiom.
+    /// The `DisjointClasses` axiom family.
     DisjointClasses {
-        /// Disjoint class expressions.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_classes")]
-        classes: Vec<ClassExpression>,
-        /// Axiom<L, B> annotations.
+        /// The classes operand.
+        classes: OperandSet<ClassExpression<L, B>, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object-property domain axiom.
-    ObjectPropertyDomain {
-        /// Object property expression.
-        property: ObjectPropertyExpression,
-        /// Domain class expression.
-        domain: ClassExpression,
-        /// Axiom<L, B> annotations.
+    /// The `DisjointUnion` axiom family.
+    DisjointUnion {
+        /// The class operand.
+        class: Iri<String>,
+        /// The classes operand.
+        classes: OperandSet<ClassExpression<L, B>, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// Object subproperty inclusion, including ordered property-chain inclusion.
+    /// The `SubObjectPropertyOf` axiom family.
     SubObjectPropertyOf {
-        /// A single property expression or an ordered chain.
+        /// The sub property operand.
         sub_property: SubObjectPropertyExpression,
-        /// The superproperty expression.
+        /// The super property operand.
         super_property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is functional.
+    /// The `FunctionalObjectProperty` axiom family.
     FunctionalObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is inverse-functional.
+    /// The `InverseFunctionalObjectProperty` axiom family.
     InverseFunctionalObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is reflexive.
+    /// The `ReflexiveObjectProperty` axiom family.
     ReflexiveObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is irreflexive.
+    /// The `IrreflexiveObjectProperty` axiom family.
     IrreflexiveObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is symmetric.
+    /// The `SymmetricObjectProperty` axiom family.
     SymmetricObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is asymmetric.
+    /// The `AsymmetricObjectProperty` axiom family.
     AsymmetricObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property expression is transitive.
+    /// The `TransitiveObjectProperty` axiom family.
     TransitiveObjectProperty {
-        /// The characterized object property expression.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A data property has at most one distinct data value per individual.
-    FunctionalDataProperty {
-        /// The named data property.
-        property: Iri<String>,
-        /// Axiom<L, B> annotations.
-        annotations: AxiomAnnotations<L, B>,
-    },
-    /// Equivalent object property expressions.
+    /// The `EquivalentObjectProperties` axiom family.
     EquivalentObjectProperties {
-        /// Equivalent object property expressions.
-        // bounded: operands of one caller-owned structural property axiom.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_property_pair")]
-        properties: Vec<ObjectPropertyExpression>,
-        /// Axiom<L, B> annotations.
+        /// The properties operand.
+        properties: OperandSet<ObjectPropertyExpression, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// Pairwise disjoint object property expressions.
+    /// The `DisjointObjectProperties` axiom family.
     DisjointObjectProperties {
-        /// Pairwise disjoint object property expressions.
-        // bounded: operands of one caller-owned structural property axiom.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_property_pair")]
-        properties: Vec<ObjectPropertyExpression>,
-        /// Axiom<L, B> annotations.
+        /// The properties operand.
+        properties: OperandSet<ObjectPropertyExpression, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// Two inverse object property expressions.
+    /// The `InverseObjectProperties` axiom family.
     InverseObjectProperties {
-        /// First object property expression.
-        first: ObjectPropertyExpression,
-        /// Its inverse object property expression.
-        second: ObjectPropertyExpression,
-        /// Axiom<L, B> annotations.
+        /// The properties operand.
+        properties: UnorderedPair<ObjectPropertyExpression>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object property range.
-    ObjectPropertyRange {
-        /// The restricted object property expression.
+    /// The `ObjectPropertyDomain` axiom family.
+    ObjectPropertyDomain {
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// The range class expression.
-        range: ClassExpression,
-        /// Axiom<L, B> annotations.
+        /// The domain operand.
+        domain: ClassExpression<L, B>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A data subproperty inclusion.
+    /// The `ObjectPropertyRange` axiom family.
+    ObjectPropertyRange {
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The range operand.
+        range: ClassExpression<L, B>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `SubDataPropertyOf` axiom family.
     SubDataPropertyOf {
-        /// The named subproperty.
+        /// The sub property operand.
         sub_property: Iri<String>,
-        /// The named superproperty.
+        /// The super property operand.
         super_property: Iri<String>,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// Equivalent data properties.
+    /// The `EquivalentDataProperties` axiom family.
     EquivalentDataProperties {
-        /// Equivalent named data properties.
-        // bounded: operands of one caller-owned structural property axiom.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_property_pair")]
-        properties: Vec<Iri<String>>,
-        /// Axiom<L, B> annotations.
+        /// The properties operand.
+        properties: OperandSet<Iri<String>, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// Pairwise disjoint data properties.
+    /// The `DisjointDataProperties` axiom family.
     DisjointDataProperties {
-        /// Pairwise disjoint named data properties.
-        // bounded: operands of one caller-owned structural property axiom.
-        #[serde(deserialize_with = "Axiom::<L, B>::deserialize_property_pair")]
-        properties: Vec<Iri<String>>,
-        /// Axiom<L, B> annotations.
+        /// The properties operand.
+        properties: OperandSet<Iri<String>, 2>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A data property domain.
+    /// The `DataPropertyDomain` axiom family.
     DataPropertyDomain {
-        /// The named data property.
+        /// The property operand.
         property: Iri<String>,
-        /// The domain class expression.
-        domain: ClassExpression,
-        /// Axiom<L, B> annotations.
+        /// The domain operand.
+        domain: ClassExpression<L, B>,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A data property range.
+    /// The `DataPropertyRange` axiom family.
     DataPropertyRange {
-        /// The named data property.
+        /// The property operand.
         property: Iri<String>,
-        /// The structural data range.
+        /// The range operand.
         range: DataRange<L>,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// A datatype definition.
+    /// The `FunctionalDataProperty` axiom family.
+    FunctionalDataProperty {
+        /// The property operand.
+        property: Iri<String>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `DatatypeDefinition` axiom family.
     DatatypeDefinition {
-        /// The defined datatype.
+        /// The datatype operand.
         datatype: Iri<String>,
-        /// The defining data range.
+        /// The range operand.
         range: DataRange<L>,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An object/data property key for instances of a class expression.
+    /// The `HasKey` axiom family.
     HasKey {
-        /// The class expression identified by the key.
-        class: ClassExpression,
-        /// At least one object or data key property.
+        /// The class operand.
+        class: ClassExpression<L, B>,
+        /// The properties operand.
         properties: KeyProperties,
-        /// Axiom<L, B> annotations.
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-    /// An annotation assertion axiom.
-    AnnotationAssertion {
-        /// Annotation<L, B> property IRI.
+    /// The `SameIndividual` axiom family.
+    SameIndividual {
+        /// The individuals operand.
+        individuals: OperandSet<Individual<B>, 2>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `DifferentIndividuals` axiom family.
+    DifferentIndividuals {
+        /// The individuals operand.
+        individuals: OperandSet<Individual<B>, 2>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `ClassAssertion` axiom family.
+    ClassAssertion {
+        /// The class operand.
+        class: ClassExpression<L, B>,
+        /// The individual operand.
+        individual: Individual<B>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `ObjectPropertyAssertion` axiom family.
+    ObjectPropertyAssertion {
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The source operand.
+        source: Individual<B>,
+        /// The target operand.
+        target: Individual<B>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `NegativeObjectPropertyAssertion` axiom family.
+    NegativeObjectPropertyAssertion {
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The source operand.
+        source: Individual<B>,
+        /// The target operand.
+        target: Individual<B>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `DataPropertyAssertion` axiom family.
+    DataPropertyAssertion {
+        /// The property operand.
         property: Iri<String>,
-        /// Annotation<L, B> assertion subject.
-        subject: AnnotationSubject<B>,
-        /// Annotation<L, B> assertion value.
-        value: AnnotationValue<L, B>,
-        /// Axiom<L, B> annotations.
+        /// The source operand.
+        source: Individual<B>,
+        /// The value operand.
+        value: L,
+        /// Unordered, recursively nested axiom annotations.
         annotations: AxiomAnnotations<L, B>,
     },
-}
-
-impl<L, B> Axiom<L, B> {
-    /// Create a declaration axiom without axiom annotations.
-    #[must_use]
-    pub fn declaration(entity: Entity) -> Self {
-        Self::Declaration {
-            entity,
-            annotations: AxiomAnnotations::empty(),
-        }
-    }
-
-    /// Create a subclass axiom without axiom annotations.
-    #[must_use]
-    pub fn sub_class_of(sub_class: ClassExpression, super_class: ClassExpression) -> Self {
-        Self::SubClassOf {
-            sub_class,
-            super_class,
-            annotations: AxiomAnnotations::empty(),
-        }
-    }
-
-    /// Create an equivalent-classes axiom without axiom annotations.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`StructuralModelError::InvalidFormat`] when fewer than two
-    /// class expressions are supplied.
-    pub fn equivalent_classes(classes: Vec<ClassExpression>) -> Result<Self, StructuralModelError> {
-        Self::require_pair(&classes)?;
-        Ok(Self::EquivalentClasses {
-            classes,
-            annotations: AxiomAnnotations::empty(),
-        })
-    }
-
-    /// Create a disjoint-classes axiom without axiom annotations.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`StructuralModelError::InvalidFormat`] when fewer than two
-    /// class expressions are supplied.
-    pub fn disjoint_classes(classes: Vec<ClassExpression>) -> Result<Self, StructuralModelError> {
-        Self::require_pair(&classes)?;
-        Ok(Self::DisjointClasses {
-            classes,
-            annotations: AxiomAnnotations::empty(),
-        })
-    }
-
-    fn require_pair(classes: &[ClassExpression]) -> Result<(), StructuralModelError> {
-        if classes.len() < 2 {
-            return Err(StructuralModelError::InvalidFormat {
-                kind: KIND_AXIOM_OPERANDS,
-                value: classes.len().to_string(),
-                message: "requires at least two class expressions",
-            });
-        }
-        Ok(())
-    }
-    fn deserialize_classes<'de, D: serde::Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Vec<ClassExpression>, D::Error> {
-        // bounded: class expressions of one submitted structural axiom.
-        let classes = <Vec<ClassExpression> as serde::Deserialize>::deserialize(deserializer)?;
-        Self::require_pair(&classes).map_err(serde::de::Error::custom)?;
-        Ok(classes)
-    }
+    /// The `NegativeDataPropertyAssertion` axiom family.
+    NegativeDataPropertyAssertion {
+        /// The property operand.
+        property: Iri<String>,
+        /// The source operand.
+        source: Individual<B>,
+        /// The value operand.
+        value: L,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `AnnotationAssertion` axiom family.
+    AnnotationAssertion {
+        /// The property operand.
+        property: Iri<String>,
+        /// The subject operand.
+        subject: AnnotationSubject<B>,
+        /// The value operand.
+        value: AnnotationValue<L, B>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `SubAnnotationPropertyOf` axiom family.
+    SubAnnotationPropertyOf {
+        /// The sub property operand.
+        sub_property: Iri<String>,
+        /// The super property operand.
+        super_property: Iri<String>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `AnnotationPropertyDomain` axiom family.
+    AnnotationPropertyDomain {
+        /// The property operand.
+        property: Iri<String>,
+        /// The domain operand.
+        domain: Iri<String>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
+    /// The `AnnotationPropertyRange` axiom family.
+    AnnotationPropertyRange {
+        /// The property operand.
+        property: Iri<String>,
+        /// The range operand.
+        range: Iri<String>,
+        /// Unordered, recursively nested axiom annotations.
+        annotations: AxiomAnnotations<L, B>,
+    },
 }
