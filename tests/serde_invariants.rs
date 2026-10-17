@@ -1,14 +1,16 @@
 //! Deserialization enforces constructor invariants in text and binary formats.
 
 use iri_rfc3987::Iri;
-use owl_structural_model::{ClassExpression, OntologyId, OwlLiteral};
+use owl_structural_model::{OntologyId, OwlLiteral};
+type ClassExpression = owl_structural_model::ClassExpression;
 type AnnotationValue = owl_structural_model::AnnotationValue;
 type Axiom = owl_structural_model::Axiom;
 type AxiomAnnotations = owl_structural_model::AxiomAnnotations;
 type OntologyPatch = owl_structural_model::OntologyPatch;
 type OntologyPatchOperation = owl_structural_model::OntologyPatchOperation;
 use rdf_structural_model::RDF_LANG_STRING;
-use serde::{Serialize, de::DeserializeOwned};
+use serde::ser::SerializeStructVariant;
+use serde::{Serialize, Serializer, de::DeserializeOwned};
 
 fn iri(value: &str) -> Iri<String> {
     Iri::parse(value).unwrap().into()
@@ -120,24 +122,59 @@ fn nested_literal_validation_survives_patch_deserialization() {
     assert_rejected::<OntologyPatch, _>(&patch);
 }
 
+struct ClassOperandsInput {
+    union: bool,
+    operands: Vec<ClassExpression>,
+}
+impl Serialize for ClassOperandsInput {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let (index, name) = if self.union {
+            (2, "ObjectUnionOf")
+        } else {
+            (1, "ObjectIntersectionOf")
+        };
+        serializer.serialize_newtype_variant("ClassExpression", index, name, &self.operands)
+    }
+}
+struct AxiomOperandsInput {
+    disjoint: bool,
+    classes: Vec<ClassExpression>,
+}
+impl Serialize for AxiomOperandsInput {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let (index, name) = if self.disjoint {
+            (3, "DisjointClasses")
+        } else {
+            (2, "EquivalentClasses")
+        };
+        let mut value = serializer.serialize_struct_variant("Axiom", index, name, 2)?;
+        value.serialize_field("classes", &self.classes)?;
+        value.serialize_field("annotations", &AxiomAnnotations::empty())?;
+        value.end()
+    }
+}
 #[test]
 fn empty_class_operands_are_rejected_in_both_formats() {
-    assert_rejected::<ClassExpression, _>(&ClassExpression::ObjectUnionOf(vec![]));
-    assert_rejected::<ClassExpression, _>(&ClassExpression::ObjectIntersectionOf(vec![]));
+    // bounded: the two invalid occurrence counts and two Boolean forms.
+    for operands in [vec![], vec![ClassExpression::thing()]] {
+        for union in [false, true] {
+            assert_rejected::<ClassExpression, _>(&ClassOperandsInput {
+                union,
+                operands: operands.clone(),
+            });
+        }
+    }
 }
-
 #[test]
 fn short_class_axioms_are_rejected_in_both_formats() {
-    // bounded: the two invalid arities of class equivalence/disjointness axioms.
-    for classes in [vec![], vec![ClassExpression::Thing]] {
-        assert_rejected::<Axiom, _>(&Axiom::EquivalentClasses {
-            classes: classes.clone(),
-            annotations: AxiomAnnotations::empty(),
-        });
-        assert_rejected::<Axiom, _>(&Axiom::DisjointClasses {
-            classes,
-            annotations: AxiomAnnotations::empty(),
-        });
+    // bounded: the two invalid occurrence counts and two class-axiom forms.
+    for classes in [vec![], vec![ClassExpression::thing()]] {
+        for disjoint in [false, true] {
+            assert_rejected::<Axiom, _>(&AxiomOperandsInput {
+                disjoint,
+                classes: classes.clone(),
+            });
+        }
     }
 }
 

@@ -22,7 +22,7 @@ fn property(value: &str) -> ObjectPropertyExpression {
 
 #[test]
 fn property_characteristics_keep_distinct_axiom_kinds_and_annotations() {
-    let p = ObjectPropertyExpression::inverse_of(property("urn:parent"));
+    let p = ObjectPropertyExpression::inverse_of(iri("urn:parent"));
     // bounded: one instance of each supported object-property characteristic.
     let axioms = [
         Axiom::functional_object_property(p.clone()),
@@ -68,7 +68,7 @@ fn functional_data_property_uses_a_data_property_iri() {
 #[test]
 fn property_chain_preserves_order_repetitions_and_inverses() {
     let parent = property("urn:parent");
-    let inverse = ObjectPropertyExpression::inverse_of(property("urn:sibling"));
+    let inverse = ObjectPropertyExpression::inverse_of(iri("urn:sibling"));
     // bounded: three members of one property-chain fixture.
     let members = vec![parent.clone(), inverse, parent.clone()];
     let chain = ObjectPropertyChain::try_new(members.clone()).unwrap();

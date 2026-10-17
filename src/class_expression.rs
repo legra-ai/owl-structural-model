@@ -1,134 +1,170 @@
-//! OWL class and object-property expressions.
+//! Complete OWL 2 class expressions with shared caller-owned literal/individual values.
 
+use crate::{Cardinality, ClassExpressionKind, DataRange, Individual, OperandList, OperandSet};
 use iri_rfc3987::Iri;
 
-use crate::StructuralModelError;
-
-const KIND_CLASS_EXPRESSION_OPERANDS: &str = "class expression operands";
-
-/// An OWL object property expression.
+/// A named object property or inverse of a named object property.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub enum ObjectPropertyExpression {
-    /// A named object property.
+    /// A named property.
     Named(Iri<String>),
-    /// The inverse of another object property expression.
-    InverseOf(Box<ObjectPropertyExpression>),
+    /// The inverse of a named property, as required by the structural grammar.
+    InverseOf(Iri<String>),
 }
-
 impl ObjectPropertyExpression {
     /// Create a named object property expression.
     #[must_use]
     pub fn named(iri: Iri<String>) -> Self {
         Self::Named(iri)
     }
-
-    /// Create an inverse object property expression.
+    /// Create the inverse of a named object property.
     #[must_use]
-    pub fn inverse_of(property: Self) -> Self {
-        Self::InverseOf(Box::new(property))
+    pub fn inverse_of(iri: Iri<String>) -> Self {
+        Self::InverseOf(iri)
     }
 }
 
-/// An OWL class expression.
+/// All 18 OWL 2 class-expression forms.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-pub enum ClassExpression {
-    /// A named class.
+#[serde(deny_unknown_fields)]
+pub enum ClassExpression<L = crate::OwlLiteral, B = crate::BlankNodeId> {
+    /// A named class, including owl:Thing and owl:Nothing.
     Named(Iri<String>),
-    /// `owl:Thing`.
-    Thing,
-    /// `owl:Nothing`.
-    Nothing,
-    /// An intersection of class expressions.
-    ObjectIntersectionOf(
-        #[serde(deserialize_with = "ClassExpression::deserialize_operands")] Vec<Self>,
-    ),
-    /// A union of class expressions.
-    ObjectUnionOf(#[serde(deserialize_with = "ClassExpression::deserialize_operands")] Vec<Self>),
-    /// A complement of a class expression.
+    /// Intersection of at least two source occurrences.
+    ObjectIntersectionOf(OperandSet<Self, 2>),
+    /// Union of at least two source occurrences.
+    ObjectUnionOf(OperandSet<Self, 2>),
+    /// Complement of one class expression.
     ObjectComplementOf(Box<Self>),
-    /// An existential object-property restriction.
+    /// Enumeration of individuals.
+    ObjectOneOf(OperandSet<Individual<B>, 1>),
+    /// Existential object restriction.
     ObjectSomeValuesFrom {
-        /// Restricted property.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Required filler.
+        /// The filler operand.
         filler: Box<Self>,
     },
-    /// A universal object-property restriction.
+    /// Universal object restriction.
     ObjectAllValuesFrom {
-        /// Restricted property.
+        /// The property operand.
         property: ObjectPropertyExpression,
-        /// Required filler.
+        /// The filler operand.
         filler: Box<Self>,
+    },
+    /// Object value restriction.
+    ObjectHasValue {
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The individual operand.
+        individual: Individual<B>,
+    },
+    /// Object self restriction.
+    ObjectHasSelf {
+        /// The property operand.
+        property: ObjectPropertyExpression,
+    },
+    /// Minimum object cardinality restriction.
+    ObjectMinCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The filler operand.
+        filler: Box<Self>,
+    },
+    /// Maximum object cardinality restriction.
+    ObjectMaxCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The filler operand.
+        filler: Box<Self>,
+    },
+    /// Exact object cardinality restriction.
+    ObjectExactCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: ObjectPropertyExpression,
+        /// The filler operand.
+        filler: Box<Self>,
+    },
+    /// Some data-value restriction, with ordered property positions.
+    DataSomeValuesFrom {
+        /// The properties operand.
+        properties: OperandList<Iri<String>, 1>,
+        /// The range operand.
+        range: DataRange<L>,
+    },
+    /// All data-value restriction, with ordered property positions.
+    DataAllValuesFrom {
+        /// The properties operand.
+        properties: OperandList<Iri<String>, 1>,
+        /// The range operand.
+        range: DataRange<L>,
+    },
+    /// Data value restriction.
+    DataHasValue {
+        /// The property operand.
+        property: Iri<String>,
+        /// The value operand.
+        value: L,
+    },
+    /// Min data cardinality restriction.
+    DataMinCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: Iri<String>,
+        /// The range operand.
+        range: DataRange<L>,
+    },
+    /// Max data cardinality restriction.
+    DataMaxCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: Iri<String>,
+        /// The range operand.
+        range: DataRange<L>,
+    },
+    /// Exact data cardinality restriction.
+    DataExactCardinality {
+        /// The cardinality operand.
+        cardinality: Cardinality,
+        /// The property operand.
+        property: Iri<String>,
+        /// The range operand.
+        range: DataRange<L>,
     },
 }
 
-impl ClassExpression {
-    /// Create a named class expression.
+impl<L, B> ClassExpression<L, B> {
+    /// Return the structural expression kind without evaluating it.
     #[must_use]
-    pub fn named(iri: Iri<String>) -> Self {
-        Self::Named(iri)
-    }
-
-    /// Create an intersection expression.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`StructuralModelError::InvalidFormat`] for zero operands.
-    pub fn object_intersection_of(operands: Vec<Self>) -> Result<Self, StructuralModelError> {
-        Self::require_operands(&operands)?;
-        Ok(Self::ObjectIntersectionOf(operands))
-    }
-
-    /// Create a union expression.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`StructuralModelError::InvalidFormat`] for zero operands.
-    pub fn object_union_of(operands: Vec<Self>) -> Result<Self, StructuralModelError> {
-        Self::require_operands(&operands)?;
-        Ok(Self::ObjectUnionOf(operands))
-    }
-
-    /// Create a complement expression.
-    #[must_use]
-    pub fn object_complement_of(operand: Self) -> Self {
-        Self::ObjectComplementOf(Box::new(operand))
-    }
-
-    /// Create an existential object-property restriction.
-    #[must_use]
-    pub fn object_some_values_from(property: ObjectPropertyExpression, filler: Self) -> Self {
-        Self::ObjectSomeValuesFrom {
-            property,
-            filler: Box::new(filler),
+    pub fn kind(&self) -> ClassExpressionKind {
+        match self {
+            Self::Named(..) => ClassExpressionKind::Named,
+            Self::ObjectIntersectionOf(..) => ClassExpressionKind::ObjectIntersectionOf,
+            Self::ObjectUnionOf(..) => ClassExpressionKind::ObjectUnionOf,
+            Self::ObjectComplementOf(..) => ClassExpressionKind::ObjectComplementOf,
+            Self::ObjectOneOf(..) => ClassExpressionKind::ObjectOneOf,
+            Self::ObjectSomeValuesFrom { .. } => ClassExpressionKind::ObjectSomeValuesFrom,
+            Self::ObjectAllValuesFrom { .. } => ClassExpressionKind::ObjectAllValuesFrom,
+            Self::ObjectHasValue { .. } => ClassExpressionKind::ObjectHasValue,
+            Self::ObjectHasSelf { .. } => ClassExpressionKind::ObjectHasSelf,
+            Self::ObjectMinCardinality { .. } => ClassExpressionKind::ObjectMinCardinality,
+            Self::ObjectMaxCardinality { .. } => ClassExpressionKind::ObjectMaxCardinality,
+            Self::ObjectExactCardinality { .. } => ClassExpressionKind::ObjectExactCardinality,
+            Self::DataSomeValuesFrom { .. } => ClassExpressionKind::DataSomeValuesFrom,
+            Self::DataAllValuesFrom { .. } => ClassExpressionKind::DataAllValuesFrom,
+            Self::DataHasValue { .. } => ClassExpressionKind::DataHasValue,
+            Self::DataMinCardinality { .. } => ClassExpressionKind::DataMinCardinality,
+            Self::DataMaxCardinality { .. } => ClassExpressionKind::DataMaxCardinality,
+            Self::DataExactCardinality { .. } => ClassExpressionKind::DataExactCardinality,
         }
-    }
-
-    /// Create a universal object-property restriction.
-    #[must_use]
-    pub fn object_all_values_from(property: ObjectPropertyExpression, filler: Self) -> Self {
-        Self::ObjectAllValuesFrom {
-            property,
-            filler: Box::new(filler),
-        }
-    }
-
-    fn require_operands(operands: &[Self]) -> Result<(), StructuralModelError> {
-        if operands.is_empty() {
-            return Err(StructuralModelError::InvalidFormat {
-                kind: KIND_CLASS_EXPRESSION_OPERANDS,
-                value: "0".to_owned(),
-                message: "requires at least one operand",
-            });
-        }
-        Ok(())
-    }
-    fn deserialize_operands<'de, D: serde::Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Vec<Self>, D::Error> {
-        // bounded: operands of one submitted class expression.
-        let operands = <Vec<Self> as serde::Deserialize>::deserialize(deserializer)?;
-        Self::require_operands(&operands).map_err(serde::de::Error::custom)?;
-        Ok(operands)
     }
 }

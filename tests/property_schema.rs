@@ -3,7 +3,8 @@
 mod support;
 
 use iri_rfc3987::Iri;
-use owl_structural_model::{ClassExpression, KeyProperties, ObjectPropertyExpression};
+use owl_structural_model::{KeyProperties, ObjectPropertyExpression};
+type ClassExpression = owl_structural_model::ClassExpression;
 type Annotation = owl_structural_model::Annotation;
 type AnnotationValue = owl_structural_model::AnnotationValue;
 type Axiom = owl_structural_model::Axiom;
@@ -21,31 +22,31 @@ fn property(value: &str) -> ObjectPropertyExpression {
 #[test]
 fn object_property_relationships_preserve_operands_and_annotations() {
     let p = property("urn:parent");
-    let q = ObjectPropertyExpression::inverse_of(property("urn:child"));
+    let q = ObjectPropertyExpression::inverse_of(iri("urn:child"));
     let equivalent = Axiom::equivalent_object_properties(vec![p.clone(), q.clone()]).unwrap();
     assert!(
         matches!(&equivalent, Axiom::EquivalentObjectProperties { properties, .. }
-        if properties == &[p.clone(), q.clone()])
+        if properties.as_slice() == [p.clone(), q.clone()])
     );
     let disjoint = Axiom::disjoint_object_properties(vec![p.clone(), q.clone()]).unwrap();
     assert!(
         matches!(&disjoint, Axiom::DisjointObjectProperties { properties, .. }
-        if properties == &[p.clone(), q.clone()])
+        if properties.as_slice() == [p.clone(), q.clone()])
     );
     let inverse = Axiom::inverse_object_properties(p.clone(), q.clone());
     assert!(
-        matches!(&inverse, Axiom::InverseObjectProperties { first, second, .. }
-        if first == &p && second == &q)
+        matches!(&inverse, Axiom::InverseObjectProperties { properties, .. }
+        if properties.as_slice() == [p.clone(), q.clone()])
     );
-    let range = Axiom::object_property_range(p.clone(), ClassExpression::Thing);
+    let range = Axiom::object_property_range(p.clone(), ClassExpression::thing());
     assert!(
-        matches!(&range, Axiom::ObjectPropertyRange { property, range: ClassExpression::Thing, .. }
-        if property == &p)
+        matches!(&range, Axiom::ObjectPropertyRange { property, range: actual_range, .. }
+        if property == &p && actual_range == &ClassExpression::thing())
     );
-    let domain = Axiom::object_property_domain(p.clone(), ClassExpression::Nothing);
+    let domain = Axiom::object_property_domain(p.clone(), ClassExpression::nothing());
     assert!(
-        matches!(&domain, Axiom::ObjectPropertyDomain { property, domain: ClassExpression::Nothing, .. }
-        if property == &p)
+        matches!(&domain, Axiom::ObjectPropertyDomain { property, domain: actual_domain, .. }
+        if property == &p && actual_domain == &ClassExpression::nothing())
     );
     // bounded: five structural schema fixtures.
     for axiom in [equivalent, disjoint, inverse, range, domain] {
@@ -65,17 +66,17 @@ fn data_property_relationships_and_datatype_definitions_preserve_ranges() {
     let equivalent = Axiom::equivalent_data_properties(vec![p.clone(), q.clone()]).unwrap();
     assert!(
         matches!(&equivalent, Axiom::EquivalentDataProperties { properties, .. }
-        if properties == &[p.clone(), q.clone()])
+        if properties.as_slice() == [p.clone(), q.clone()])
     );
     let disjoint = Axiom::disjoint_data_properties(vec![p.clone(), q.clone()]).unwrap();
     assert!(
         matches!(&disjoint, Axiom::DisjointDataProperties { properties, .. }
-        if properties == &[p.clone(), q])
+        if properties.as_slice() == [p.clone(), q])
     );
-    let domain = Axiom::data_property_domain(p.clone(), ClassExpression::Thing);
+    let domain = Axiom::data_property_domain(p.clone(), ClassExpression::thing());
     assert!(
-        matches!(&domain, Axiom::DataPropertyDomain { property, domain: ClassExpression::Thing, .. }
-        if property == &p)
+        matches!(&domain, Axiom::DataPropertyDomain { property, domain: actual_domain, .. }
+        if property == &p && actual_domain == &ClassExpression::thing())
     );
     let range = DataRange::data_complement_of(DataRange::datatype(iri("urn:negative")));
     let range_axiom = Axiom::data_property_range(p.clone(), range.clone());
@@ -125,7 +126,7 @@ fn assert_bad_properties<T: serde::Serialize>(kind: &str, properties: &[T]) {
 
 #[test]
 fn keys_keep_object_and_data_properties_separate() {
-    let p = ObjectPropertyExpression::inverse_of(property("urn:parent"));
+    let p = ObjectPropertyExpression::inverse_of(iri("urn:parent"));
     let d = iri("urn:identifier");
     // bounded: object-only, data-only, and mixed key fixtures.
     for (objects, data) in [
@@ -136,7 +137,7 @@ fn keys_keep_object_and_data_properties_separate() {
         let properties = KeyProperties::try_new(objects.clone(), data.clone()).unwrap();
         assert_eq!(properties.object_properties(), objects);
         assert_eq!(properties.data_properties(), data);
-        let class = ClassExpression::object_complement_of(ClassExpression::Nothing);
+        let class = ClassExpression::object_complement_of(ClassExpression::nothing());
         let axiom = Axiom::has_key(class.clone(), properties.clone());
         assert!(
             matches!(&axiom, Axiom::HasKey { class: actual, properties: actual_properties, .. }
@@ -158,7 +159,7 @@ fn empty_keys_fail_at_construction_and_deserialization() {
             .contains("requires at least one key property")
     );
     let error = serde_json::from_str::<Axiom>(
-        r#"{"HasKey":{"class":"Thing","properties":{"object_properties":[],"data_properties":[]},"annotations":{"annotations":[]}}}"#,
+        r#"{"HasKey":{"class":{"Named":"http://www.w3.org/2002/07/owl#Thing"},"properties":{"object_properties":[],"data_properties":[]},"annotations":{"annotations":[]}}}"#,
     ).unwrap_err();
     assert!(
         error

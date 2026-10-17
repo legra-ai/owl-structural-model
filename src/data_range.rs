@@ -2,13 +2,14 @@
 
 use iri_rfc3987::Iri;
 
-use crate::{OwlLiteral, StructuralModelError};
+use crate::{DataRangeKind, OperandSet, OwlLiteral, StructuralModelError};
 
 /// A datatype facet IRI paired with an exact literal restriction value.
 ///
 /// Whether a facet and value belong to a datatype's facet space is a semantic
 /// validation concern, not a structural constructor invariant.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FacetRestriction<L = OwlLiteral> {
     facet: Iri<String>,
     value: L,
@@ -36,31 +37,28 @@ impl<L> FacetRestriction<L> {
 
 /// A unary OWL 2 data range, independent of any datatype evaluator or RDF store.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
-#[serde(
-    try_from = "DataRangeInput<L>",
-    bound(deserialize = "L: serde::Deserialize<'de>")
-)]
+#[serde(deny_unknown_fields)]
 pub enum DataRange<L = OwlLiteral> {
     /// A named datatype.
     Datatype(Iri<String>),
     /// Intersection of at least two data ranges.
     // bounded: operands of one caller-owned structural expression.
-    DataIntersectionOf(Vec<Self>),
+    DataIntersectionOf(OperandSet<Self, 2>),
     /// Union of at least two data ranges.
     // bounded: operands of one caller-owned structural expression.
-    DataUnionOf(Vec<Self>),
+    DataUnionOf(OperandSet<Self, 2>),
     /// Complement of one data range.
     DataComplementOf(Box<Self>),
     /// Enumeration of at least one literal, preserving exact lexical forms.
     // bounded: literals in one caller-owned structural enumeration.
-    DataOneOf(Vec<L>),
+    DataOneOf(OperandSet<L, 1>),
     /// A named datatype restricted by at least one facet/value pair.
     DatatypeRestriction {
         /// The restricted datatype.
         datatype: Iri<String>,
         /// Structural restrictions, interpreted conjunctively.
         // bounded: facets of one caller-owned structural restriction.
-        restrictions: Vec<FacetRestriction<L>>,
+        restrictions: OperandSet<FacetRestriction<L>, 1>,
     },
 }
 
@@ -77,8 +75,7 @@ impl<L> DataRange<L> {
     ///
     /// Returns [`StructuralModelError::InvalidFormat`] for fewer than two operands.
     pub fn data_intersection_of(operands: Vec<Self>) -> Result<Self, StructuralModelError> {
-        Self::require_count(operands.len(), 2, "data intersection")?;
-        Ok(Self::DataIntersectionOf(operands))
+        Ok(Self::DataIntersectionOf(OperandSet::try_new(operands)?))
     }
 
     /// Create a union of data ranges.
@@ -87,8 +84,7 @@ impl<L> DataRange<L> {
     ///
     /// Returns [`StructuralModelError::InvalidFormat`] for fewer than two operands.
     pub fn data_union_of(operands: Vec<Self>) -> Result<Self, StructuralModelError> {
-        Self::require_count(operands.len(), 2, "data union")?;
-        Ok(Self::DataUnionOf(operands))
+        Ok(Self::DataUnionOf(OperandSet::try_new(operands)?))
     }
 
     /// Create the complement of a data range.
@@ -103,8 +99,7 @@ impl<L> DataRange<L> {
     ///
     /// Returns [`StructuralModelError::InvalidFormat`] for zero literals.
     pub fn data_one_of(literals: Vec<L>) -> Result<Self, StructuralModelError> {
-        Self::require_count(literals.len(), 1, "data enumeration")?;
-        Ok(Self::DataOneOf(literals))
+        Ok(Self::DataOneOf(OperandSet::try_new(literals)?))
     }
 
     /// Create a restricted datatype without evaluating its facets or values.
@@ -116,66 +111,24 @@ impl<L> DataRange<L> {
         datatype: Iri<String>,
         restrictions: Vec<FacetRestriction<L>>,
     ) -> Result<Self, StructuralModelError> {
-        Self::require_count(restrictions.len(), 1, "datatype restriction")?;
         Ok(Self::DatatypeRestriction {
             datatype,
-            restrictions,
+            restrictions: OperandSet::try_new(restrictions)?,
         })
     }
-
-    fn require_count(
-        count: usize,
-        minimum: usize,
-        kind: &'static str,
-    ) -> Result<(), StructuralModelError> {
-        if count < minimum {
-            return Err(StructuralModelError::InvalidFormat {
-                kind,
-                value: count.to_string(),
-                message: if minimum == 1 {
-                    "requires at least one operand"
-                } else {
-                    "requires at least two operands"
-                },
-            });
-        }
-        Ok(())
-    }
 }
 
-/// Serde input mirrors the serialized shape; conversion uses the same checked
-/// constructors as callers. Recursive operands are checked `DataRange` values.
-#[derive(serde::Deserialize)]
-enum DataRangeInput<L> {
-    Datatype(Iri<String>),
-    // bounded: operands of one deserialized structural expression.
-    DataIntersectionOf(Vec<DataRange<L>>),
-    // bounded: operands of one deserialized structural expression.
-    DataUnionOf(Vec<DataRange<L>>),
-    DataComplementOf(Box<DataRange<L>>),
-    // bounded: literals of one deserialized structural enumeration.
-    DataOneOf(Vec<L>),
-    DatatypeRestriction {
-        datatype: Iri<String>,
-        // bounded: facets of one deserialized structural restriction.
-        restrictions: Vec<FacetRestriction<L>>,
-    },
-}
-
-impl<L> TryFrom<DataRangeInput<L>> for DataRange<L> {
-    type Error = StructuralModelError;
-
-    fn try_from(input: DataRangeInput<L>) -> Result<Self, Self::Error> {
-        match input {
-            DataRangeInput::Datatype(datatype) => Ok(Self::datatype(datatype)),
-            DataRangeInput::DataIntersectionOf(operands) => Self::data_intersection_of(operands),
-            DataRangeInput::DataUnionOf(operands) => Self::data_union_of(operands),
-            DataRangeInput::DataComplementOf(operand) => Ok(Self::DataComplementOf(operand)),
-            DataRangeInput::DataOneOf(literals) => Self::data_one_of(literals),
-            DataRangeInput::DatatypeRestriction {
-                datatype,
-                restrictions,
-            } => Self::datatype_restriction(datatype, restrictions),
+impl<L> DataRange<L> {
+    /// Return the standard data-range family without evaluating datatype values.
+    #[must_use]
+    pub fn kind(&self) -> DataRangeKind {
+        match self {
+            Self::Datatype(_) => DataRangeKind::Datatype,
+            Self::DataIntersectionOf(_) => DataRangeKind::DataIntersectionOf,
+            Self::DataUnionOf(_) => DataRangeKind::DataUnionOf,
+            Self::DataComplementOf(_) => DataRangeKind::DataComplementOf,
+            Self::DataOneOf(_) => DataRangeKind::DataOneOf,
+            Self::DatatypeRestriction { .. } => DataRangeKind::DatatypeRestriction,
         }
     }
 }
