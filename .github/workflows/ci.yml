@@ -54,7 +54,7 @@ jobs:
         run: |
           IFS= read -r formatter_toolchain < rustfmt-toolchain || exit 1
           printf 'toolchain=%s\n' "$formatter_toolchain" >> "$GITHUB_OUTPUT"
-      - uses: dtolnay/rust-toolchain@1.99.1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
           toolchain: ${{ steps.formatter.outputs.toolchain }}
           components: rustfmt
@@ -62,12 +62,7 @@ jobs:
         with:
           toolchain: 1.99.1
           components: clippy
-          # Cargo 1.89 predates CARGO_BUILD_WARNINGS, which v2 uses by default.
           rustflags: -D warnings
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          toolchain: nightly-2026-10-16
-          components: rustfmt
       - run: ./scripts/fmt.sh --check
       - run: cargo test --locked --all-targets
       - run: cargo test --locked --doc

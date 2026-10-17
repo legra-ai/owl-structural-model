@@ -41,8 +41,7 @@ class CommitPolicyTests(unittest.TestCase):
         self.assertEqual(len(setups), 2, "Both test and publish must configure Rust")
         for step in setups:
             with self.subTest(step=step):
-                # v2's CARGO_BUILD_WARNINGS needs Cargo 1.97; this repository
-                # pins 1.89, so warning failures must use rustc flags directly.
+                # Keep warnings fatal in both validation and publication builds.
                 self.assertIn("          rustflags: -D warnings\n", step)
 
     def test_ci_and_hooks_share_pinned_toolchains(self):
