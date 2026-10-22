@@ -32,6 +32,18 @@ class ReleaseCredentialTests(unittest.TestCase):
         )
 
 
+class DependabotPolicyTests(unittest.TestCase):
+    def test_shared_actions_are_grouped_across_major_updates(self):
+        root = Path(__file__).resolve().parents[1]
+        config = (root / ".github/dependabot.yml").read_text()
+        actions = config.split("package-ecosystem: github-actions", 1)[1]
+        group = re.split(r"\n      [a-z-]+:", actions.split("      shared-policy:\n", 1)[1], maxsplit=1)[0]
+        self.assertIn("applies-to: version-updates", group)
+        self.assertIn('patterns: ["legra-ai/github-actions*"]', group)
+        self.assertNotIn("update-types:", group)
+        self.assertIn("applies-to: security-updates", actions)
+
+
 class CommitPolicyTests(unittest.TestCase):
     def test_ci_keeps_warnings_fatal_with_pinned_rust(self):
         root = Path(__file__).resolve().parents[1]
