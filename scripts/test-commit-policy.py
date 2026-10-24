@@ -45,6 +45,13 @@ class DependabotPolicyTests(unittest.TestCase):
 
 
 class CommitPolicyTests(unittest.TestCase):
+    def test_hook_installer_declares_owning_checkout(self):
+        root = Path(__file__).resolve().parents[1]
+        self.assertIn(
+            '.install_from_build_script(env!("CARGO_MANIFEST_DIR"))',
+            (root / "build.rs").read_text(),
+        )
+
     def test_ci_keeps_warnings_fatal_with_pinned_rust(self):
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github/workflows/ci.yml").read_text()
