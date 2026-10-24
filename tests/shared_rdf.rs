@@ -289,3 +289,19 @@ fn class_assertions_borrow_nested_literal_and_anonymous_payloads() {
     }
     assert_eq!(postcard::to_allocvec(&borrowed).unwrap(), bytes);
 }
+
+#[test]
+fn shared_rdf_upgrade_preserves_annotation_literal_identity() {
+    let value = |text: &str, tag: &str, direction| -> AnnotationValue {
+        AnnotationValue::Literal(Literal::directional(
+            text,
+            LanguageTag::try_new(tag.to_owned()).unwrap(),
+            direction,
+        ))
+    };
+    let original = value("005", "EN-us", BaseDirection::Rtl);
+    assert_eq!(original, value("005", "en-US", BaseDirection::Rtl));
+    assert_ne!(original, value("5", "en-us", BaseDirection::Rtl));
+    assert_ne!(original, value("005", "en-us", BaseDirection::Ltr));
+    support::assert_round_trip(&original);
+}
