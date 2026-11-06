@@ -137,11 +137,11 @@ jobs:
         with:
           toolchain: 1.99.1
           rustflags: -D warnings
-      - uses: legra-ai/github-actions/.github/actions/tag-tested-release@197c8c131c4c9145234622977b9bbfb8ecc87b65
+      - uses: legra-ai/github-actions/.github/actions/tag-tested-release@ade19d2cab57447f2450b1d5339b3e8143fe4510
         with:
           version: ${{ needs.prepare.outputs.version }}
           revision: ${{ needs.prepare.outputs.revision }}
-      - uses: legra-ai/github-actions/.github/actions/generate-changelog@197c8c131c4c9145234622977b9bbfb8ecc87b65
+      - uses: legra-ai/github-actions/.github/actions/generate-changelog@ade19d2cab57447f2450b1d5339b3e8143fe4510
         with:
           revision: ${{ needs.prepare.outputs.revision }}
           output-file: CHANGELOG_RELEASE.md
@@ -151,7 +151,7 @@ jobs:
           target_commitish: ${{ needs.prepare.outputs.revision }}
           body_path: CHANGELOG_RELEASE.md
           draft: true
-      - uses: legra-ai/github-actions/.github/actions/publish-tested-crate@197c8c131c4c9145234622977b9bbfb8ecc87b65
+      - uses: legra-ai/github-actions/.github/actions/publish-tested-crate@ade19d2cab57447f2450b1d5339b3e8143fe4510
         with:
           crate: owl-structural-model
           version: ${{ needs.prepare.outputs.version }}
