@@ -3,7 +3,7 @@
 mod support;
 
 use iri_rfc3987::Iri;
-use owl_structural_model::OwlLiteral;
+use owl_structural_model::{ConstrainingFacet, OwlDatatype, OwlLiteral};
 type DataRange = owl_structural_model::DataRange;
 type FacetRestriction = owl_structural_model::FacetRestriction;
 
@@ -11,29 +11,31 @@ fn iri(value: &str) -> Iri<String> {
     Iri::parse(value).unwrap().into()
 }
 
-fn datatype(name: &str) -> DataRange {
-    DataRange::datatype(iri(&format!("http://www.w3.org/2001/XMLSchema#{name}")))
+fn datatype(datatype: OwlDatatype) -> DataRange {
+    DataRange::datatype(datatype.into())
 }
 
 #[test]
 fn every_data_range_form_round_trips_with_exact_literals() {
-    let integer = iri("http://www.w3.org/2001/XMLSchema#integer");
+    let integer: Iri<String> = OwlDatatype::Integer.into();
     let five = OwlLiteral::typed("005", integer.clone()).unwrap();
-    let min = FacetRestriction::new(
-        iri("http://www.w3.org/2001/XMLSchema#minInclusive"),
-        five.clone(),
-    );
+    let min = FacetRestriction::new(ConstrainingFacet::MinInclusive.into(), five.clone());
     assert_eq!(min.value(), &five);
     assert_eq!(
         min.facet(),
-        &iri("http://www.w3.org/2001/XMLSchema#minInclusive")
+        &Iri::<String>::from(ConstrainingFacet::MinInclusive)
     );
     let restricted = DataRange::datatype_restriction(integer, vec![min]).unwrap();
     // bounded: one example of each of the six OWL 2 data-range forms.
     let forms = [
-        datatype("integer"),
-        DataRange::data_intersection_of(vec![datatype("integer"), restricted.clone()]).unwrap(),
-        DataRange::data_union_of(vec![datatype("string"), datatype("integer")]).unwrap(),
+        datatype(OwlDatatype::Integer),
+        DataRange::data_intersection_of(vec![datatype(OwlDatatype::Integer), restricted.clone()])
+            .unwrap(),
+        DataRange::data_union_of(vec![
+            datatype(OwlDatatype::String),
+            datatype(OwlDatatype::Integer),
+        ])
+        .unwrap(),
         DataRange::data_complement_of(restricted.clone()),
         DataRange::data_one_of(vec![
             five.clone(),
@@ -50,14 +52,14 @@ fn every_data_range_form_round_trips_with_exact_literals() {
     }
     assert_ne!(
         five,
-        OwlLiteral::typed("5", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap()
+        OwlLiteral::typed("5", OwlDatatype::Integer.into()).unwrap()
     );
 }
 
 #[test]
 fn empty_and_singleton_boolean_data_ranges_are_rejected() {
     // bounded: the two invalid arities for intersection and union.
-    for operands in [vec![], vec![datatype("integer")]] {
+    for operands in [vec![], vec![datatype(OwlDatatype::Integer)]] {
         assert!(DataRange::data_intersection_of(operands.clone()).is_err());
         assert!(DataRange::data_union_of(operands.clone()).is_err());
         let encoded = serde_json::to_string(&operands).unwrap();

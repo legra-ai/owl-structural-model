@@ -4,7 +4,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use iri_rfc3987::Iri;
-use owl_structural_model::OwlLiteral;
+use owl_structural_model::{BuiltInEntity, OwlDatatype, OwlLiteral};
 use owl_structural_model::{Individual, KeyProperties, ObjectPropertyExpression};
 use rdf_structural_model::BlankNodeId;
 type DataRange = owl_structural_model::DataRange;
@@ -43,8 +43,8 @@ fn class_boolean_identity_ignores_order_and_repeated_members() {
 
 #[test]
 fn data_enumerations_are_sets_of_exact_literals() {
-    let first = OwlLiteral::typed("005", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap();
-    let second = OwlLiteral::typed("5", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap();
+    let first = OwlLiteral::typed("005", OwlDatatype::Integer.into()).unwrap();
+    let second = OwlLiteral::typed("5", OwlDatatype::Integer.into()).unwrap();
     assert_ne!(first, second);
     let left = DataRange::data_one_of(vec![first.clone(), second.clone()]).unwrap();
     let right = DataRange::data_one_of(vec![second, first.clone(), first]).unwrap();
@@ -55,11 +55,11 @@ fn data_enumerations_are_sets_of_exact_literals() {
 #[test]
 fn builtin_class_names_have_one_structural_identity() {
     assert_eq!(
-        ClassExpression::named(iri("http://www.w3.org/2002/07/owl#Thing")),
+        ClassExpression::named(BuiltInEntity::Thing.into()),
         ClassExpression::thing()
     );
     assert_eq!(
-        ClassExpression::named(iri("http://www.w3.org/2002/07/owl#Nothing")),
+        ClassExpression::named(BuiltInEntity::Nothing.into()),
         ClassExpression::nothing()
     );
     assert!(ClassExpression::thing().is_thing());

@@ -45,7 +45,9 @@ pub use operands::OperandList;
 pub use patch::{OntologyPatch, OntologyPatchOperation};
 pub use property_chain::{ObjectPropertyChain, SubObjectPropertyExpression};
 pub use rdf_structural_model::{BlankNodeId, Literal as OwlLiteral};
-pub use vocabulary::{OWL_NOTHING, OWL_THING, RDFS_LITERAL};
+pub use vocabulary::{
+    BuiltInEntity, ConstrainingFacet, OwlDatatype, ReservedAnnotationProperty, VocabularyTerm,
+};
 
 #[cfg(test)]
 mod tests {

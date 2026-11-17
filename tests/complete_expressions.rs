@@ -6,7 +6,7 @@ use std::collections::HashSet;
 
 use iri_rfc3987::Iri;
 use owl_structural_model::{
-    Cardinality, ClassExpressionKind, Individual, ObjectPropertyExpression,
+    BuiltInEntity, Cardinality, ClassExpressionKind, Individual, ObjectPropertyExpression,
 };
 use rdf_structural_model::{BlankNodeId, Literal};
 use serde::ser::SerializeStructVariant;
@@ -145,7 +145,7 @@ fn unqualified_cardinalities_have_explicit_standard_fillers() {
             Some(ClassExpression::thing())
         )
     );
-    let default_range = || DataRange::datatype(iri("http://www.w3.org/2000/01/rdf-schema#Literal"));
+    let default_range = || DataRange::datatype(BuiltInEntity::Literal.into());
     assert_eq!(
         ClassExpression::data_min_cardinality(0.into(), iri("urn:p"), None),
         ClassExpression::data_min_cardinality(0.into(), iri("urn:p"), Some(default_range()))

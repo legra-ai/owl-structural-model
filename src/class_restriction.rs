@@ -1,7 +1,8 @@
 //! Cardinality and data-property restriction constructors.
 use crate::ObjectPropertyExpression;
 use crate::{
-    Cardinality, ClassExpression, DataRange, OperandList, RDFS_LITERAL, StructuralModelError,
+    BuiltInEntity, Cardinality, ClassExpression, DataRange, OperandList, StructuralModelError,
+    VocabularyTerm,
 };
 use iri_rfc3987::Iri;
 impl<L, B> ClassExpression<L, B> {
@@ -83,7 +84,7 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataMinCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
+            range: range.unwrap_or_else(|| DataRange::datatype(BuiltInEntity::Literal.iri())),
         }
     }
     /// Create a data maximum cardinality restriction; no range means rdfs:Literal.
@@ -96,7 +97,7 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataMaxCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
+            range: range.unwrap_or_else(|| DataRange::datatype(BuiltInEntity::Literal.iri())),
         }
     }
     /// Create a data exact cardinality restriction; no range means rdfs:Literal.
@@ -109,7 +110,7 @@ impl<L, B> ClassExpression<L, B> {
         Self::DataExactCardinality {
             cardinality,
             property,
-            range: range.unwrap_or_else(|| DataRange::datatype(Self::builtin(RDFS_LITERAL))),
+            range: range.unwrap_or_else(|| DataRange::datatype(BuiltInEntity::Literal.iri())),
         }
     }
 }
