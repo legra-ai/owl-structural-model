@@ -3,7 +3,7 @@ mod support;
 use iri_rfc3987::Iri;
 use owl_structural_model::{
     AxiomKind, Entity, Individual, KeyProperties, ObjectPropertyExpression, OntologyId,
-    SubObjectPropertyExpression,
+    OwlDatatype, SubObjectPropertyExpression,
 };
 use rdf_structural_model::{BlankNodeId, Literal};
 use std::collections::HashSet;
@@ -26,7 +26,7 @@ fn property() -> ObjectPropertyExpression {
     ObjectPropertyExpression::named(iri("urn:p"))
 }
 fn range() -> DataRange {
-    DataRange::datatype(iri("http://www.w3.org/2001/XMLSchema#string"))
+    DataRange::datatype(OwlDatatype::String.into())
 }
 fn literal() -> Literal {
     Literal::string("exact value")

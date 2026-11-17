@@ -4,7 +4,7 @@ mod support;
 
 use iri_rfc3987::Iri;
 use owl_structural_model::{
-    Entity, EntityKind, ObjectPropertyExpression, OntologyId, OwlLiteral,
+    Entity, EntityKind, ObjectPropertyExpression, OntologyId, OwlDatatype, OwlLiteral,
     SubObjectPropertyExpression,
 };
 type ClassExpression = owl_structural_model::ClassExpression;
@@ -117,8 +117,7 @@ fn class_axioms_and_annotation_forms_round_trip() {
     ] {
         support::assert_round_trip(&axiom);
     }
-    let literal =
-        OwlLiteral::typed("005", iri("http://www.w3.org/2001/XMLSchema#integer")).unwrap();
+    let literal = OwlLiteral::typed("005", OwlDatatype::Integer.into()).unwrap();
     // bounded: both annotation-subject forms.
     for subject in [
         AnnotationSubject::Iri(iri("urn:subject")),

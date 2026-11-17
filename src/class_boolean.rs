@@ -1,7 +1,7 @@
 //! Constructors for Boolean class expressions and object restrictions.
 use crate::{
-    ClassExpression, Individual, OWL_NOTHING, OWL_THING, ObjectPropertyExpression, OperandSet,
-    StructuralModelError,
+    BuiltInEntity, ClassExpression, Individual, ObjectPropertyExpression, OperandSet,
+    StructuralModelError, VocabularyTerm,
 };
 use iri_rfc3987::Iri;
 
@@ -14,27 +14,22 @@ impl<L, B> ClassExpression<L, B> {
     /// Create owl:Thing as a named class.
     #[must_use]
     pub fn thing() -> Self {
-        Self::named(Self::builtin(OWL_THING))
+        Self::named(BuiltInEntity::Thing.iri())
     }
     /// Create owl:Nothing as a named class.
     #[must_use]
     pub fn nothing() -> Self {
-        Self::named(Self::builtin(OWL_NOTHING))
+        Self::named(BuiltInEntity::Nothing.iri())
     }
     /// Return whether this expression is the named universal class.
     #[must_use]
     pub fn is_thing(&self) -> bool {
-        matches!(self, Self::Named(iri) if iri.as_str() == OWL_THING)
+        matches!(self, Self::Named(iri) if BuiltInEntity::Thing.names(iri))
     }
     /// Return whether this expression is the named empty class.
     #[must_use]
     pub fn is_nothing(&self) -> bool {
-        matches!(self, Self::Named(iri) if iri.as_str() == OWL_NOTHING)
-    }
-    pub(crate) fn builtin(value: &'static str) -> Iri<String> {
-        Iri::parse(value)
-            .expect("built-in OWL/RDF IRI is valid")
-            .into()
+        matches!(self, Self::Named(iri) if BuiltInEntity::Nothing.names(iri))
     }
     /// Create an unordered intersection.
     /// # Errors

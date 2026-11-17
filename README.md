@@ -46,7 +46,13 @@ The crate keeps the structural layer explicit:
   machine-word limit. Omitted qualifiers become explicit `owl:Thing` or
   `rdfs:Literal` fillers; RDF literal lexical forms remain untouched.
 - `AxiomKind`, `ClassExpressionKind` and `DataRangeKind` provide reusable typed
-  visitor/diagnostic categories.
+  visitor/diagnostic categories. Each exposes its complete `ALL` catalog and the
+  functional-syntax production every category represents.
+- `BuiltInEntity`, `ReservedAnnotationProperty`, `ConstrainingFacet` and
+  `OwlDatatype` are closed, documented catalogs of the reserved OWL 2 vocabulary:
+  the built-in entities, the reserved annotation properties, every normative
+  constraining facet and every datatype of the OWL 2 datatype map. The
+  `VocabularyTerm` trait converts each term to and from its IRI.
 - Property axioms include all seven object-property characteristics, functional
   data properties, and object subproperty inclusions with either a single
   property expression or an ordered `ObjectPropertyChain`. Chains preserve
