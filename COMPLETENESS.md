@@ -5,19 +5,22 @@ The reference is the [OWL 2 Structural Specification, second edition](https://ww
 | Structural area | Representation | Executable evidence |
 |---|---|---|
 | Entity categories | All six declaration categories | `serde_round_trips.rs` |
-| Class expressions | All 18 grammar forms, including all object/data cardinalities | `complete_expressions.rs` |
+| Class expressions | All 18 grammar forms, including all object/data cardinalities | `complete_expressions.rs`, `grammar_census.rs` |
 | Individuals | Named and scoped anonymous individuals; caller-selected anonymous identity | `complete_grammar.rs`, `shared_rdf.rs` |
 | Object properties | Named and inverse-of-named expressions; ordered subproperty chains | `property_axioms.rs`, `complete_expressions.rs` |
-| Data ranges | All six standard unary forms and facet/value pairs | `data_ranges.rs` |
-| Axiom families | All 37 standard families, including all seven assertion kinds and all four annotation-axiom kinds | `complete_grammar.rs` |
+| Data ranges | All 6 standard unary forms and facet/value pairs | `data_ranges.rs`, `grammar_census.rs` |
+| Axiom families | All 37 standard families, including all seven assertion kinds and all four annotation-axiom kinds | `complete_grammar.rs`, `grammar_census.rs`, `golden.rs` |
 | Annotations | Ontology/axiom annotation values and recursively annotated annotations | `complete_grammar.rs`, `structural_identity.rs` |
 | Ontology identity and changes | Anonymous/named/versioned IDs; imports, annotations and axioms in ordered patches | `serde_round_trips.rs` |
 | Local arity | Protected minimum occurrence counts for Boolean expressions, enumerations, n-ary axioms, facets and ordered property lists | `complete_arities.rs`, `serde_invariants.rs` |
 | Structural identity | Unordered association equality/hash; ordered chains and assertion positions; exact literal identity | `structural_identity.rs`, `property_axioms.rs` |
 | Generic and borrowed values | Literals/anonymous identities propagate through class expressions, ranges, annotations, assertions and patches | `shared_rdf.rs` |
-| Serialization | JSON and non-self-describing Postcard; checked nested input and rejected unknown semantic fields | All integration suites, especially `serde_strictness.rs` |
+| Reserved vocabulary | 7 built-in entities, 9 reserved annotation properties, 9 constraining facets and the 33 datatypes of the OWL 2 datatype map | `vocabulary.rs` |
+| Serialization | JSON and non-self-describing Postcard; checked nested input and rejected unknown semantic fields; property-based round trips; golden bytes per axiom family | All integration suites, especially `serde_strictness.rs`, `serde_properties.rs` and `golden.rs` |
 
-The class-expression inventory is `Class`, four Boolean/enumeration constructors, two object quantifiers, object value/self restrictions, three object cardinalities, two data quantifiers, a data value restriction and three data cardinalities. Built-in classes are named IRIs, not additional expression categories. `ClassExpressionKind`, `AxiomKind` and `DataRangeKind` expose the complete catalogs for consumers.
+The class-expression inventory is `Class`, four Boolean/enumeration constructors, two object quantifiers, object value/self restrictions, three object cardinalities, two data quantifiers, a data value restriction and three data cardinalities. Built-in classes are named IRIs, not additional expression categories. `ClassExpressionKind`, `AxiomKind` and `DataRangeKind` expose the complete catalogs for consumers as `ALL`, each category naming its functional-syntax production.
+
+The counts are checked, not asserted by hand. `grammar_census.rs` expands the `Axiom`, `ClassExpression` and `DataRange` productions of a vendored transcription of section 13 (`tests/fixtures/owl2-functional-grammar.txt`, W3C Recommendation of 11 December 2012) and requires each concrete production to match exactly one kind. It also requires the counts in this table to equal the `ALL` catalogs.
 
 Arity is checked against source occurrences in the functional grammar. Repeated operands can occur in source syntax. Equality and hashing treat unordered associations as sets, while iteration and serialization retain source occurrences. These bytes are not canonical identities. Cardinalities are normalized integer values; literal lexical forms are not normalized. Omitting a cardinality qualifier constructs its explicit standard filler.
 
