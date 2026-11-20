@@ -327,9 +327,9 @@ dependencies = [
 
 [[package]]
 name = "rdf-structural-model"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbe5d1383be18bae33242c317c592745251f5db6ba89d755527068db07aee1d2"
+checksum = "c0cfd55c9ce9b3b8a25c93ad38898b0fc7b610ca883f107a7543847b0320c027"
 dependencies = [
  "borrow-or-share",
  "iri-rfc3987",

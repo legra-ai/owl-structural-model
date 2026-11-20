@@ -29,7 +29,7 @@ doctest = true
 
 [dependencies]
 iri-rfc3987 = "=0.3.3"
-rdf-structural-model = "=0.4.1"
+rdf-structural-model = "=0.5.0"
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 
