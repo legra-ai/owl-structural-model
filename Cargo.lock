@@ -206,7 +206,7 @@ dependencies = [
 
 [[package]]
 name = "owl-structural-model"
-version = "2.3.4"
+version = "2.3.5"
 dependencies = [
  "iri-rfc3987",
  "postcard",
